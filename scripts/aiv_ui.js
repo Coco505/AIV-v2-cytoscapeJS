@@ -12,14 +12,14 @@
         if (typeof window.aivNamespace.AIV !== 'undefined') { // only run if we have initialized cytoscape app
             let AIV = window.aivNamespace.AIV;
             // below functions should bind to AIV is they're more app-level features
-            AIV.mapManDropDown = mapManDropDown;
+            // AIV.mapManDropDown = mapManDropDown;
             AIV.filterAllElistener = filterAllElistener;
             runUIFunctions(AIV);
         }
         else { // if not loaded, try again after 1 second
             setTimeout(function(){
                 let AIV = window.aivNamespace.AIV;
-                AIV.mapManDropDown = mapManDropDown;
+                // AIV.mapManDropDown = mapManDropDown;
                 AIV.filterAllElistener = filterAllElistener;
                 runUIFunctions(AIV);
             }, 1000);
@@ -72,7 +72,7 @@
         panUp(AIVref);
         panDown(AIVref);
         highlightNodes(AIVref);
-        hideUnhideMapMan(AIVref);
+        // hideUnhideMapMan(AIVref);
         hideUnhideDonuts(AIVref);
         hideUnhideDNA(AIVref);
         qTipsUI();
@@ -86,7 +86,7 @@
     /** @function addExampleEListener - example form*/
     function addExampleEListener() {
         $('#example').click(function() {
-            $('#genes').val("At2g34970\nAt1g04880\nAt1g25420\nAt5g43700");
+            $('#genes').val("LOC_Os02g54120\nLOC_Os02g52140\nLOC_Os03g54160");
             resetForm();
             document.getElementById('queryBAR').click();
             document.getElementById('queryDna').click();
@@ -254,28 +254,48 @@
             // console.log(latestEntryLen);
             // console.log(latestEntryLen % 10);
 
-            if (latestEntryLen % 10 === 0 && (key === "a" || key === "A")){
-                geneForm.value += "A";
+            if (latestEntryLen % 14 === 0 && (key === "l" || key === "L")){
+                geneForm.value += "L";
             }
-            else if ((latestEntryLen % 10 === 1) && (key === "t" || key === "T")){
-                geneForm.value += "t";
+            else if ((latestEntryLen % 14 === 1) && (key === "o" || key === "O")){
+                geneForm.value += "O";
             }
-            else if ((latestEntryLen % 10 === 2) && key.match(/[1-5]/)){
+            else if ((latestEntryLen % 14 === 2) && (key === "c" || key === "C")){
+                geneForm.value += "C";
+            }
+            else if ((latestEntryLen % 14 === 3) && (key === "-" || key === "_")){
+                geneForm.value += "_";
+            }
+            else if ((latestEntryLen % 14 === 4) && (key === "o" || key === "O")){
+                geneForm.value += "O";
+            }
+            else if ((latestEntryLen % 14 === 5) && (key === "s" || key === "S")){
+                geneForm.value += "s";
+            }
+            else if ((latestEntryLen % 14 === 6) && key.match(/[01]/)){
                 geneForm.value += key;
             }
-            else if ((latestEntryLen % 10 === 3) && key.match(/[gmc]/i)){
+            else if ((latestEntryLen % 14 === 7)){
+                if ((geneFormValue.slice(-1) === '0') && key.match(/[1-9]/)){
+                    geneForm.value += key;
+            }
+                else if ((geneFormValue.slice(-1) === '1') && key.match(/[0-2]/)){
+                    geneForm.value += key;
+                }
+            }
+            else if ((latestEntryLen % 14 === 8) && key.match(/[g]/i)){
                 geneForm.value += key;
             }
-            else if ((latestEntryLen % 10 === 4) ||
-                     (latestEntryLen % 10 === 5) ||
-                     (latestEntryLen % 10 === 6) ||
-                     (latestEntryLen % 10 === 7) ||
-                     (latestEntryLen % 10 === 8) &&
+            else if ((latestEntryLen % 14 === 9) ||
+                     (latestEntryLen % 14 === 10) ||
+                     (latestEntryLen % 14 === 11) ||
+                     (latestEntryLen % 14 === 12) ||
+                     (latestEntryLen % 14 === 13) &&
                      key.match(/\d/)){
                 geneForm.value += key;
             }
 
-            if (latestEntryLen % 10 === 9){ //automatically add new lines after a person has entered 'At2g10000'
+            if (latestEntryLen % 14 === 13){ //automatically add new lines after a person has entered 'At2g10000'
                 geneForm.value += "\n";
             }
 
@@ -440,7 +460,7 @@
             let geneList = [];
             AIVObj.cy.filter("node[name ^= 'At']").forEach(function(node){
                 let nodeID = node.data('name');
-                if (nodeID.match(/^AT[1-5MC]G\d{5}$/i)){ //only get ABI IDs, i.e. exclude effectors
+                if (nodeID.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)){ //only get ABI IDs, i.e. exclude effectors
                     geneList.push(nodeID);
                 }
             });
@@ -696,7 +716,7 @@
                     document.getElementById('addEffectorButton').addEventListener('click', function(e){
                         let latestFormEntry = document.getElementById('genes').value.split('\n').pop();
                         console.log(latestFormEntry);
-                        if (latestFormEntry.match(/^AT[1-5MC]G\d{5}$/i) || res.data.indexOf(latestFormEntry) >= 0){
+                        if (latestFormEntry.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i) || res.data.indexOf(latestFormEntry) >= 0){
                             document.getElementById('genes').value += "\n" + effectorSelect$.val();
                         }
                         else if (latestFormEntry === "\n" || latestFormEntry === ""){
@@ -1063,20 +1083,20 @@
         });
     }
 
-    /**
-     * @function hideUnhideMapMan - add event listeners to the PPPI thersholds (confidence and correlation coefficients)
-     * @param {object} AIVObj - reference to the AIV namespace object
-     */
-    function filterPredictedPPIsInputsEListener(AIVObj){
-        function eListener (event){
-            if ( document.getElementById('filterPPPIsCheckbox').checked ){
-                AIVObj.cy.$('.pearsonAndInterologfilterPPPI').removeClass('pearsonAndInterologfilterPPPI');
-                pearsonAndInterologFilterPPPIonEles(AIVObj);
-            }
-        }
-        document.getElementById('PPPICorrThreshold').addEventListener('change', eListener);
-        document.getElementById('PPPIConfThreshold').addEventListener('change', eListener);
-    }
+    // /**
+    //  * @function hideUnhideMapMan - add event listeners to the PPPI thersholds (confidence and correlation coefficients)
+    //  * @param {object} AIVObj - reference to the AIV namespace object
+    //  */
+    // function filterPredictedPPIsInputsEListener(AIVObj){
+    //     function eListener (event){
+    //         if ( document.getElementById('filterPPPIsCheckbox').checked ){
+    //             AIVObj.cy.$('.pearsonAndInterologfilterPPPI').removeClass('pearsonAndInterologfilterPPPI');
+    //             pearsonAndInterologFilterPPPIonEles(AIVObj);
+    //         }
+    //     }
+    //     document.getElementById('PPPICorrThreshold').addEventListener('change', eListener);
+    //     document.getElementById('PPPIConfThreshold').addEventListener('change', eListener);
+    // }
 
     /**
      * @function restrictUIInputsNumRange - restrict the threshold values
@@ -1096,16 +1116,16 @@
         });
     }
 
-    /**
-     * @function hideUnhideMapMan - event listener binding function for hiding mapman donut centres
-     * @param {object} AIVObj - reference to the AIV namespace object
-     */
-    function hideUnhideMapMan(AIVObj) {
-        document.getElementById('hideMapManDiv').addEventListener('click', function(event){
-            AIVObj.hideMapMan($("#hideMapManEye").hasClass('fa-eye'));
-            $("#hideMapManEye").toggleClass('fa-eye fa-eye-slash');
-        });
-    }
+    // /**
+    //  * @function hideUnhideMapMan - event listener binding function for hiding mapman donut centres
+    //  * @param {object} AIVObj - reference to the AIV namespace object
+    //  */
+    // function hideUnhideMapMan(AIVObj) {
+    //     document.getElementById('hideMapManDiv').addEventListener('click', function(event){
+    //         AIVObj.hideMapMan($("#hideMapManEye").hasClass('fa-eye'));
+    //         $("#hideMapManEye").toggleClass('fa-eye fa-eye-slash');
+    //     });
+    // }
 
     /**
      * @function hideUnhideDonuts - event listener binding function for hiding pie chart donuts
@@ -1274,33 +1294,33 @@
             AIVObj.cy.$('.highlighted').removeClass('highlighted');
             document.getElementById('highlightNodesAGIs').value = "";
         });
-    };
-
-    /**
-     * @function mapManDropDown -
-     * @param {object} AIVObj - reference to global namespace AIV object, with access to cytoscape methods
-     */
-    function mapManDropDown(AIVObj){
-        $('#mmDropdown').on({ //hack to prohibit the dropdown from closing when you click outside, credits to https://stackoverflow.com/questions/19740121/keep-bootstrap-dropdown-open-when-clicked-off/19797577#19797577
-            "shown.bs.dropdown": function() { this.closable = false; },
-            "click":             function() { this.closable = true; },
-            "hide.bs.dropdown":  function() { return this.closable; }
-        });
-
-        $('#bootstrapDropDownMM a').on( 'click', function( event ) {
-            let inputChild = $(event.target).children("input");
-            inputChild.prop('checked', !inputChild.is(':checked'));
-            hideMapManNodes($(event.target).data("value"));
-            return false;
-        });
-
-        function hideMapManNodes(mapManNum){
-            console.log(mapManNum);
-            AIVObj.cy.startBatch();
-            AIVObj.cy.$(`node[mapManOverlay = '${mapManNum}'][id ^= "Protein"]`).toggleClass('hideMapManNodes');
-            AIVObj.cy.endBatch();
-        };
     }
+
+    // /**
+    //  * @function mapManDropDown -
+    //  * @param {object} AIVObj - reference to global namespace AIV object, with access to cytoscape methods
+    //  */
+    // function mapManDropDown(AIVObj){
+    //     $('#mmDropdown').on({ //hack to prohibit the dropdown from closing when you click outside, credits to https://stackoverflow.com/questions/19740121/keep-bootstrap-dropdown-open-when-clicked-off/19797577#19797577
+    //         "shown.bs.dropdown": function() { this.closable = false; },
+    //         "click":             function() { this.closable = true; },
+    //         "hide.bs.dropdown":  function() { return this.closable; }
+    //     });
+    //
+    //     $('#bootstrapDropDownMM a').on( 'click', function( event ) {
+    //         let inputChild = $(event.target).children("input");
+    //         inputChild.prop('checked', !inputChild.is(':checked'));
+    //         hideMapManNodes($(event.target).data("value"));
+    //         return false;
+    //     });
+    //
+    //     function hideMapManNodes(mapManNum){
+    //         console.log(mapManNum);
+    //         AIVObj.cy.startBatch();
+    //         AIVObj.cy.$(`node[mapManOverlay = '${mapManNum}'][id ^= "Protein"]`).toggleClass('hideMapManNodes');
+    //         AIVObj.cy.endBatch();
+    //     };
+    // }
 
     /**
      * @function qTipsUI - bind qTips to HTML elements which have the title attribute

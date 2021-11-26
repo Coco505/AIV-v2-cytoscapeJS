@@ -15,7 +15,7 @@
     /**
      * @namespace {object} AIV - Important hash tables to store state data and styling global data
      * @property {object} chromosomesAdded - Object property for 'state' of how many PDI chromosomes exist
-     * @property {boolean} mapManLoadState - Boolean property representing if mapMan AJAX call was successful
+     // * @property {boolean} mapManLoadState - Boolean property representing if mapMan AJAX call was successful
      * @property {boolean} SUBA4LoadState - Boolean property representing if SUBA4 AJAX call was successful
      * @property {object} exprLoadState - State of the expression values the user has loaded for the current query genes
      * @property {number} nodeSize - "Global" default data such as default node size
@@ -30,11 +30,11 @@
      * @property {object} defaultPan - contains x and y properties for where the graph has been panned, useful for layouts
      * @property {object} miFilter - a list of unuseful mi terms that ideally would be filled out if a PPI/PDI does not have another meaningful name
      * @property {object} miTerms - a dictionary of frequently occuring (needs to be curated manually as EMBL doesn't have an API) MI terms that come from our dapseq ppi webservice
-     * @property {object} mapManDefinitions - a dictionary of of MapMan terms (first number/hierarchical category)
-     * @property {object} mapManOnDom - state variable dictionary that stores which MapMan BINs are in the app; used for when adding to the dropdown
+     // * @property {object} mapManDefinitions - a dictionary of of MapMan terms (first number/hierarchical category)
+     // * @property {object} mapManOnDom - state variable dictionary that stores which MapMan BINs are in the app; used for when adding to the dropdown
      */
     AIV.chromosomesAdded = {};
-    AIV.mapManLoadState = false;
+    // AIV.mapManLoadState = false;
     AIV.SUBA4LoadState = false;
     AIV.exprLoadState = {absolute: false, relative: false};
     AIV.nodeSize = 35;
@@ -98,47 +98,47 @@
         "1178" : "sequence based prediction of binding of transcription factor to transcribed gene regulatory elements",
         "2189" : "avexis"
     };
-    AIV.mapManDefinitions =
-    {
-        "0" : "Control",
-        "1" : "PS",
-        "2" : "Major CHO metabolism",
-        "3" : "Minor CHO metabolism",
-        "4" : "Glycolysis",
-        "5" : "Fermentation",
-        "6" : "Gluconeogensis",
-        "7" : "OPP",
-        "8" : "TCA/org. transformation",
-        "9" : "Mitochondrial electron transport",
-        "10": "Cell wall",
-        "11": "Lipid Metabolism",
-        "12": "N-metabolism",
-        "13": "Amino acid metabolism",
-        "14": "S-assimilation",
-        "15": "Metal handling",
-        "16": "Secondary metabolism",
-        "17": "Hormone metabolism",
-        "18": "Co-factor and vitamin metabolism",
-        "19": "Tetrapyrrole synthesis",
-        "20": "Stress",
-        "21": "Redox",
-        "22": "Polyamine metabolism",
-        "23": "Nucleotide metabolsim",
-        "24": "Biodegradation of xenobiotics",
-        "25": "C1-metabolism",
-        "26": "Misc.",
-        "27": "RNA",
-        "28": "DNA",
-        "29": "Protein",
-        "30": "Signalling",
-        "31": "Cell",
-        "32": "Micro RNA, natural antisense etc.",
-        "33": "Development",
-        "34": "Transport",
-        "35": "Not assigned",
-        "991": "Mineral nutrition"
-    };
-    AIV.mapManOnDom = {};
+    // AIV.mapManDefinitions =
+    // {
+    //     "0" : "Control",
+    //     "1" : "PS",
+    //     "2" : "Major CHO metabolism",
+    //     "3" : "Minor CHO metabolism",
+    //     "4" : "Glycolysis",
+    //     "5" : "Fermentation",
+    //     "6" : "Gluconeogensis",
+    //     "7" : "OPP",
+    //     "8" : "TCA/org. transformation",
+    //     "9" : "Mitochondrial electron transport",
+    //     "10": "Cell wall",
+    //     "11": "Lipid Metabolism",
+    //     "12": "N-metabolism",
+    //     "13": "Amino acid metabolism",
+    //     "14": "S-assimilation",
+    //     "15": "Metal handling",
+    //     "16": "Secondary metabolism",
+    //     "17": "Hormone metabolism",
+    //     "18": "Co-factor and vitamin metabolism",
+    //     "19": "Tetrapyrrole synthesis",
+    //     "20": "Stress",
+    //     "21": "Redox",
+    //     "22": "Polyamine metabolism",
+    //     "23": "Nucleotide metabolsim",
+    //     "24": "Biodegradation of xenobiotics",
+    //     "25": "C1-metabolism",
+    //     "26": "Misc.",
+    //     "27": "RNA",
+    //     "28": "DNA",
+    //     "29": "Protein",
+    //     "30": "Signalling",
+    //     "31": "Cell",
+    //     "32": "Micro RNA, natural antisense etc.",
+    //     "33": "Development",
+    //     "34": "Transport",
+    //     "35": "Not assigned",
+    //     "991": "Mineral nutrition"
+    // };
+    // AIV.mapManOnDom = {};
 
     /**
      * @namespace {object} AIV
@@ -164,13 +164,13 @@
 
             // Get the list of genes
             let genes = $.trim($('#genes').val());
-            genes = AIV.formatAGI(genes); //Format to keep "At3g10000" format when identifying unique nodes, i.e. don't mixup between AT3G10000 and At3g10000 and add a node twice
+            genes = AIV.formatAGI(genes); //Format to keep "LOC_Os02g10000" format when identifying unique nodes, i.e. don't mixup between LOC_OS02G10000 and LOC_Os02g10000 and add a node twice
             let geneArr = genes.split('\n');
             let effectorArr = [...document.getElementById('effectorSelect').options].map(option => option.value);
 
             for (let i = 0; i < geneArr.length; i++) { // gene form input verification
-                if(!geneArr[i].match(/^AT[1-5MC]G\d{5}$/i) && effectorArr.indexOf(geneArr[i]) === -1){
-                    document.getElementById('errorModalBodyMsg').innerText = "Please check form value before adding effectors/submission! Genes should be delimited by newlines and follow the AGI format.";
+                if(!geneArr[i].match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i) && effectorArr.indexOf(geneArr[i]) === -1){
+                    document.getElementById('errorModalBodyMsg').innerText = "Please check form value before adding effectors/submission! Genes should be delimited by newlines and follow the RGI format.";
                     $('#formErrorModal').modal('show');
                     throw new Error('wrong submission');
                 }
@@ -216,12 +216,12 @@
      */
     AIV.resetState = function() {
         this.chromosomesAdded = {};
-        this.mapManLoadState = false;
+        // this.mapManLoadState = false;
         this.SUBA4LoadState = false;
         this.exprLoadState = {absolute: false, relative: false};
         this.coseParentNodesOnCyCore = false;
         this.locCompoundNodes = [];
-        this.mapManOnDom = {};
+        // this.mapManOnDom = {};
         // clear memoized memory
         AIV.memoizedSanRefIDs.cache = new _.memoize.Cache;
         AIV.memoizedRetRefLink.cache = new _.memoize.Cache;
@@ -237,7 +237,7 @@
         $('.submit-reset').prop('checked', false);
         $(".fa-eye-slash").toggleClass('fa-eye fa-eye-slash');
         // Remove prior mapman definitions for that app state
-        $('#bootstrapDropDownMM').empty();
+        // $('#bootstrapDropDownMM').empty();
 
         //remove existing interactions table except headers
         $("#csvTable").find("tr:gt(0)").remove();
@@ -254,9 +254,8 @@
      * @returns {string} - formmated AGI, i.e. At3g10000
      */
     AIV.formatAGI = function (AGI){
-        AGI = AGI.replace(/T/g,'t');
+        AGI = AGI.replace(/S/g,'s');
         AGI = AGI.replace(/G/g, 'g');
-        AGI = AGI.replace(/a/g, 'A');
         return AGI;
     };
 
@@ -347,10 +346,10 @@
                 .style({
                     'display' : 'none',
                 })
-            .selector('.hideMapManNodes') //add/(remove) this class to nodes to (un)display MapMan nodes with a specific MapMan number
-                .style({
-                    'display' : 'none',
-                })
+            // .selector('.hideMapManNodes') //add/(remove) this class to nodes to (un)display MapMan nodes with a specific MapMan number
+            //     .style({
+            //         'display' : 'none',
+            //     })
             .selector('.pearsonfilterEPPI') //to hide/unhide experimentally determined elements
                 .style({
                     'display' : 'none',
@@ -956,7 +955,7 @@
                                             let HTML = "";
                                             HTML += AIV.showDesc(protein);
                                             HTML += AIV.showSynonyms(protein);
-                                            HTML += `<p>${AIV.showMapMan(protein)}</p>`;
+                                            // HTML += `<p>${AIV.showMapMan(protein)}</p>`;
                                             HTML += `<p>${AIV.displaySUBA4qTipData(protein)}</p>`;
                                             if (AIV.exprLoadState.absolute && exprOverlayChkbox.checked){
                                                 HTML += `<p>Mean Expr: ${protein.data('absExpMn')}</p>
@@ -991,7 +990,7 @@
     AIV.parseProteinNodes = function(cb, needNodeRef=false){
         this.cy.filter("node[id ^= 'Protein_At']").forEach(function(node){
             let nodeID = node.data('name');
-            if (nodeID.match(/^AT[1-5MC]G\d{5}$/i)) { //only get AGI IDs, i.e. exclude effectors
+            if (nodeID.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) { //only get AGI IDs, i.e. exclude effectors
                 if (needNodeRef){
                     cb(node);
                 }
@@ -1024,22 +1023,22 @@
         return `<p>Synoynms: ${syns}</p> <hr>`;
     };
 
-    /**
-     * @function showMapMan - helper function to decide whether or not to show MapMan on protein qTip
-     * @param {object} protein - reference to the particular protein which we are adding a qTip
-     * @returns {string} - a nicely formmated HTML string of its mapman codes
-     */
-    AIV.showMapMan = function(protein) {
-        let mapManNums = protein.data('numOfMapMans');
-        if (!mapManNums){ return ""; } //exit if undefined
-        let baseString = "";
-        for (let i = 1; i < ( mapManNums + 1 ) ; i++) {
-            baseString += `<p> MapMan Code ${i} : ` + protein.data('MapManCode' + i) + '</p>' + `<p> MapMan Annotation ${i} : ` + protein.data('MapManName' + i) + '</p>';
-        }
-        baseString += "<hr>";
-        // console.log(baseString);
-        return baseString;
-    };
+    // /**
+    //  * @function showMapMan - helper function to decide whether or not to show MapMan on protein qTip
+    //  * @param {object} protein - reference to the particular protein which we are adding a qTip
+    //  * @returns {string} - a nicely formmated HTML string of its mapman codes
+    //  */
+    // AIV.showMapMan = function(protein) {
+    //     let mapManNums = protein.data('numOfMapMans');
+    //     if (!mapManNums){ return ""; } //exit if undefined
+    //     let baseString = "";
+    //     for (let i = 1; i < ( mapManNums + 1 ) ; i++) {
+    //         baseString += `<p> MapMan Code ${i} : ` + protein.data('MapManCode' + i) + '</p>' + `<p> MapMan Annotation ${i} : ` + protein.data('MapManName' + i) + '</p>';
+    //     }
+    //     baseString += "<hr>";
+    //     // console.log(baseString);
+    //     return baseString;
+    // };
 
     /**
      * @function displaySUBA4qTipData - helper function to decide whether or not to show SUBA4 html table on protein qTip, if so it will add a data property to a node such that it will be ready for display via qTip
@@ -1262,22 +1261,29 @@
                 let edgeData = dataSubset[i]; // Data from the PHP API comes in the form of an array of PPIs/PDIs hence this variable name
                 let dbSrc = "BAR";
 
-                let {index, source, target, reference, published, interolog_confidence, correlation_coefficient, mi} = edgeData;
+                // let {index, source, target, reference, published, interolog_confidence, correlation_coefficient, mi} = edgeData;////
+                let {source, target, reference, published, correlation_coefficient, mi} = edgeData;
 
                 // Source, note that source is NEVER DNA
-                if (source.match(/^AT[1-5MC]G\d{5}$/i)) {
+                if (source.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
                     typeSource = 'Protein';
                 } else {
                     typeSource = 'Effector';
                 }
 
+                // // Target////
+                // if (target.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
+                //     if (index === '2') {
+                //         typeTarget = 'DNA';
+                //     } else {
+                //         typeTarget = 'Protein';
+                //     }
+                // } else {
+                //     typeTarget = 'Effector';
+                // }
                 // Target
-                if (target.match(/^AT[1-5MC]G\d{5}$/i)) {
-                    if (index === '2') {
-                        typeTarget = 'DNA';
-                    } else {
-                        typeTarget = 'Protein';
-                    }
+                if (target.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
+                    typeTarget = 'Protein';
                 } else {
                     typeTarget = 'Effector';
                 }
@@ -1292,7 +1298,7 @@
                 reference = reference.split('\n').map(x => dbSrc + "-" + x).join('\n');
 
                 // Coerce scientific notation to fixed decimal point number
-                interolog_confidence = scientificToDecimal(interolog_confidence);
+                // interolog_confidence = scientificToDecimal(interolog_confidence);////
 
                 if (typeTarget === "Protein" || typeTarget === "Effector") {
                     if ( AIV.cy.getElementById(`${typeSource}_${source}`).empty()) { //only add source node if not already on app, recall our ids follow the format Protein_At2g10000
@@ -1305,9 +1311,10 @@
                     this.addDNANodesToAIVObj(edgeData); //pass the DNA in the JSON format we GET on
                 }
 
-                if (index !== '2') { //i.e. PPI edge
+                // if (index !== '2') { //i.e. PPI edge////
                     let edgeSelector = `${typeSource}_${source}_${typeTarget}_${target}`;
                     if ( AIV.cy.$id(edgeSelector).empty() ) { //Check if edge already added from perhaps the PSICQUIC webservices
+                        //TODO: change this and param of addEdge
                         this.addEdges(source, typeSource, target, typeTarget, reference, published, interolog_confidence, dbSrc, correlation_coefficient, mi);
                     }
                     else { //PSICQUIC edges added first
@@ -1328,12 +1335,12 @@
                             published : true, // must be true if PSICQUIC edges loaded
                         });
                     }
-                }
-                else if ( index === '2') { // PDI edge
-                    if (this.cy.getElementById(`${typeSource}_${source}_DNA_Chr${target.charAt(2)}`).length === 0){ // If we don't already have an edge from this gene to a chromosome
-                        this.addEdges(source, typeSource, `Chr${target.charAt(2)}`, typeTarget /*DNA*/, reference, published, interolog_confidence, dbSrc, correlation_coefficient, mi);
-                    }
-                }
+                // }
+                // else if ( index === '2') { // PDI edge////
+                //     if (this.cy.getElementById(`${typeSource}_${source}_DNA_Chr${target.charAt(2)}`).length === 0){ // If we don't already have an edge from this gene to a chromosome
+                //         this.addEdges(source, typeSource, `Chr${target.charAt(2)}`, typeTarget /*DNA*/, reference, published, interolog_confidence, dbSrc, correlation_coefficient, mi);
+                //     }
+                // }
             }
         } //end of adding nodes and edges
 
@@ -1832,143 +1839,143 @@
         this.cy.endBatch();
     };
 
-    /**
-     * @namespace {object} AIV
-     * @function createGETMapManURL -
-     * Create URL for get request for mapman information, namely for the codes (MapMan IDs).
-     * Example: http://www.gabipd.org/services/rest/mapman/bin?request=[{"agi":"At4g36250"},{"agi":"At4g02070"}]
-     * Data returned is an array of objects, MapMan code is nested inside "result[0].parent.code" for each AGI
-     * @returns {string} - url for the HTTP request
-     */
-    AIV.createGETMapManURL = function () {
-        let mapmanURL = "//bar.utoronto.ca/interactions2/cgi-bin/bar_mapman.php?request=[";
-        this.parseProteinNodes((nodeID) => mapmanURL +=`"${nodeID}",`);
-        mapmanURL = mapmanURL.slice(0,-1); //remove last ','
-        mapmanURL += "]";
-        return mapmanURL;
-    };
-
-    /**
-     * @namespace {object} AIV
-     * @function processMapMan -
-     * Take in the MapMan data from response JSON to be processed:
-     * 1) Add MapMan code(s) and name(s) to node data to be displayed via qTip and on their donut centre
-     *
-     * @param {object} MapManJSON - the JSON response we receive from the MapMan API
-     */
-    AIV.processMapMan = function (MapManJSON) {
-        if (!this.mapManLoadState) { //if MapMan data not yet fully parsed after API call, i.e. initial load
-            MapManJSON.forEach(function(geneMapMan) { // Iterate through each result item and inside however many annotations it has
-                var particularGene = AIV.cy.$('node[id = "Protein_' + geneMapMan.request.agi + '"]');
-                particularGene.data("numOfMapMans", geneMapMan.result.length); //for use in the qTip
-                geneMapMan.result.forEach(function (resultItem, index) {
-                    var MapManCodeN = 'MapManCode' +  (index + 1); //i.e. MapManCode1
-                    var MapManNameN = 'MapManName' +  (index + 1); //i.e. MapManName1
-                    particularGene.data({ //Add this data to object to be called via the qTip
-                        [MapManCodeN] : chopMapMan(resultItem.code),
-                        [MapManNameN] : chopMapMan(resultItem.name)
-                    });
-
-                    //Now call SVG modifying function for the first iteration, Nick agreed to only show the first MapMan on the Donut, also add this MapMan to our checklist/legend
-                    if (index === 0) {
-                        let mapManBIN = resultItem.code.split(".")[0]; // get MapMan BIN (leftmost number, i.e. get 29 from 29.12.3)
-                        particularGene.data('mapManOverlay', mapManBIN);
-                        modifySVGString(particularGene, mapManBIN);
-                        if (!AIV.mapManOnDom.hasOwnProperty(mapManBIN)){
-                            AIV.mapManOnDom[mapManBIN] = 1;
-                        }
-                        else {
-                            AIV.mapManOnDom[mapManBIN] = AIV.mapManOnDom[mapManBIN] + 1;
-                        }
-                    }
-                });
-            });
-            // Last, use the mapManOnDom state variable to add the list of checkboxes to our #bootstrapDropDownMM
-            // example li item <li><a href="#" class="small" data-value="27" tabIndex="-1"><input type="checkbox"/ checked="true"> MapMan 27 - RNA</a></li>
-            // credits: https://codepen.io/bseth99/pen/fboKH
-            let df = document.createDocumentFragment();
-            for (let mapManNumKey of Object.keys(AIV.mapManOnDom)){
-                let li = document.createElement('li');
-                let a = document.createElement('a');
-                AIV.helperSetAttributes(a, {
-                    "data-value" : mapManNumKey,
-                    "tabIndex"   : "-1",
-                    "href"       : "#"
-                });
-                a.className = "small";
-                let input = document.createElement('input');
-                AIV.helperSetAttributes(input, {
-                    'type' : 'checkbox',
-                    'checked' : 'true'
-                });
-                a.append(input);
-                a.insertAdjacentHTML("beforeend", ` ${mapManNumKey}-${AIV.mapManDefinitions[mapManNumKey]} (${AIV.mapManOnDom[mapManNumKey]})`);
-                li.append(a);
-                df.append(li);
-            }
-            document.getElementById('bootstrapDropDownMM').appendChild(df);
-            AIV.mapManDropDown(AIV);
-        }
-        else {
-           this.parseProteinNodes(function(proteinNode){
-               modifySVGString(proteinNode, proteinNode.data('mapManOverlay'));
-           }, true);
-        }
-
-        /**
-         * @function chopMapman - decides whether or not to chop off MapMan Code/Name based on its detail/length (decided with discussion with Nick)
-         * @param {string} nameOrCode - "27.2.1 or RNA.regulation.transcription" as an example
-         */
-        function chopMapMan(nameOrCode) {
-            if ( (nameOrCode.match(/\./g)||[]).length > 3 ){ //If the MapMan is too detailed, remove the last occurence
-                return nameOrCode.substr(0, nameOrCode.lastIndexOf("."));
-            }
-            return nameOrCode; //By default return unmodified string if it is not too detailed
-        }
-
-        /**
-         * @namespace {object} AIV
-         * @function modifySVGString - Expect a node as an object reference and modify its svgDonut string by adding a text tag
-         * @param {object} geneNode - as a node object reference
-         * @param {string} mapManNum - the first MapMan number (leftmost)
-         */
-        function modifySVGString(geneNode, mapManNum) {
-            if (typeof mapManNum === "undefined") {return;}
-            let newSVGString = decodeURIComponent(geneNode.data('svgDonut')).replace("</svg>", ""); //strip </svg> closing tag
-            newSVGString = newSVGString.replace('data:image/svg+xml;utf8,', "");
-            // console.log(newSVGString);
-            let xPosition = mapManNum.length > 1 ? '32%' : '41%'; //i.e. check if single or double digit
-            let fontSize = geneNode.data('queryGene') ? 22 : 13; //Determine whether gene is bigger or not (i.e. search gene or not)
-
-            newSVGString += `<text x='${xPosition}' y='59%' font-size='${fontSize}' font-family="Verdana" visibility="visible">${mapManNum}</text></svg>`;
-            newSVGString = 'data:image/svg+xml;utf8,' + encodeURIComponent(newSVGString);
-
-            geneNode.data('svgDonut', newSVGString);
-        }
-
-    };
-
-    /**
-     * @namespace {object} AIV
-     * @function hideMapMan - un/hides MapMan centre by un/enabling visibility attribute inside the svg
-     * @param {boolean} hide - boolean to determine if we are hiding or not
-     */
-    AIV.hideMapMan = function(hide){
-        this.cy.startBatch();
-        this.cy.$('node[?MapManCode1]').forEach(function(node){ //check for nodes with a MapMan
-            let newSVGString = decodeURIComponent(node.data('svgDonut'));
-            newSVGString = newSVGString.replace('data:image/svg+xml;utf8,', "");
-            if (hide){
-                newSVGString = newSVGString.replace('"visible"', '"hidden"'); //change visbility attribute
-            }
-            else {
-                newSVGString = newSVGString.replace('"hidden"', '"visible"');
-            }
-            newSVGString = 'data:image/svg+xml;utf8,' + encodeURIComponent(newSVGString);
-            node.data('svgDonut', newSVGString);
-        });
-        this.cy.endBatch();
-    };
+    // /**
+    //  * @namespace {object} AIV
+    //  * @function createGETMapManURL -
+    //  * Create URL for get request for mapman information, namely for the codes (MapMan IDs).
+    //  * Example: http://www.gabipd.org/services/rest/mapman/bin?request=[{"agi":"At4g36250"},{"agi":"At4g02070"}]
+    //  * Data returned is an array of objects, MapMan code is nested inside "result[0].parent.code" for each AGI
+    //  * @returns {string} - url for the HTTP request
+    //  */
+    // AIV.createGETMapManURL = function () {
+    //     let mapmanURL = "//bar.utoronto.ca/interactions2/cgi-bin/bar_mapman.php?request=[";
+    //     this.parseProteinNodes((nodeID) => mapmanURL +=`"${nodeID}",`);
+    //     mapmanURL = mapmanURL.slice(0,-1); //remove last ','
+    //     mapmanURL += "]";
+    //     return mapmanURL;
+    // };
+    //
+    // /**
+    //  * @namespace {object} AIV
+    //  * @function processMapMan -
+    //  * Take in the MapMan data from response JSON to be processed:
+    //  * 1) Add MapMan code(s) and name(s) to node data to be displayed via qTip and on their donut centre
+    //  *
+    //  * @param {object} MapManJSON - the JSON response we receive from the MapMan API
+    //  */
+    // AIV.processMapMan = function (MapManJSON) {
+    //     if (!this.mapManLoadState) { //if MapMan data not yet fully parsed after API call, i.e. initial load
+    //         MapManJSON.forEach(function(geneMapMan) { // Iterate through each result item and inside however many annotations it has
+    //             var particularGene = AIV.cy.$('node[id = "Protein_' + geneMapMan.request.agi + '"]');
+    //             particularGene.data("numOfMapMans", geneMapMan.result.length); //for use in the qTip
+    //             geneMapMan.result.forEach(function (resultItem, index) {
+    //                 var MapManCodeN = 'MapManCode' +  (index + 1); //i.e. MapManCode1
+    //                 var MapManNameN = 'MapManName' +  (index + 1); //i.e. MapManName1
+    //                 particularGene.data({ //Add this data to object to be called via the qTip
+    //                     [MapManCodeN] : chopMapMan(resultItem.code),
+    //                     [MapManNameN] : chopMapMan(resultItem.name)
+    //                 });
+    //
+    //                 //Now call SVG modifying function for the first iteration, Nick agreed to only show the first MapMan on the Donut, also add this MapMan to our checklist/legend
+    //                 if (index === 0) {
+    //                     let mapManBIN = resultItem.code.split(".")[0]; // get MapMan BIN (leftmost number, i.e. get 29 from 29.12.3)
+    //                     particularGene.data('mapManOverlay', mapManBIN);
+    //                     modifySVGString(particularGene, mapManBIN);
+    //                     if (!AIV.mapManOnDom.hasOwnProperty(mapManBIN)){
+    //                         AIV.mapManOnDom[mapManBIN] = 1;
+    //                     }
+    //                     else {
+    //                         AIV.mapManOnDom[mapManBIN] = AIV.mapManOnDom[mapManBIN] + 1;
+    //                     }
+    //                 }
+    //             });
+    //         });
+    //         // Last, use the mapManOnDom state variable to add the list of checkboxes to our #bootstrapDropDownMM
+    //         // example li item <li><a href="#" class="small" data-value="27" tabIndex="-1"><input type="checkbox"/ checked="true"> MapMan 27 - RNA</a></li>
+    //         // credits: https://codepen.io/bseth99/pen/fboKH
+    //         let df = document.createDocumentFragment();
+    //         for (let mapManNumKey of Object.keys(AIV.mapManOnDom)){
+    //             let li = document.createElement('li');
+    //             let a = document.createElement('a');
+    //             AIV.helperSetAttributes(a, {
+    //                 "data-value" : mapManNumKey,
+    //                 "tabIndex"   : "-1",
+    //                 "href"       : "#"
+    //             });
+    //             a.className = "small";
+    //             let input = document.createElement('input');
+    //             AIV.helperSetAttributes(input, {
+    //                 'type' : 'checkbox',
+    //                 'checked' : 'true'
+    //             });
+    //             a.append(input);
+    //             a.insertAdjacentHTML("beforeend", ` ${mapManNumKey}-${AIV.mapManDefinitions[mapManNumKey]} (${AIV.mapManOnDom[mapManNumKey]})`);
+    //             li.append(a);
+    //             df.append(li);
+    //         }
+    //         document.getElementById('bootstrapDropDownMM').appendChild(df);
+    //         AIV.mapManDropDown(AIV);
+    //     }
+    //     else {
+    //        this.parseProteinNodes(function(proteinNode){
+    //            modifySVGString(proteinNode, proteinNode.data('mapManOverlay'));
+    //        }, true);
+    //     }
+    //
+    //     /**
+    //      * @function chopMapman - decides whether or not to chop off MapMan Code/Name based on its detail/length (decided with discussion with Nick)
+    //      * @param {string} nameOrCode - "27.2.1 or RNA.regulation.transcription" as an example
+    //      */
+    //     function chopMapMan(nameOrCode) {
+    //         if ( (nameOrCode.match(/\./g)||[]).length > 3 ){ //If the MapMan is too detailed, remove the last occurence
+    //             return nameOrCode.substr(0, nameOrCode.lastIndexOf("."));
+    //         }
+    //         return nameOrCode; //By default return unmodified string if it is not too detailed
+    //     }
+    //
+    //     /**
+    //      * @namespace {object} AIV
+    //      * @function modifySVGString - Expect a node as an object reference and modify its svgDonut string by adding a text tag
+    //      * @param {object} geneNode - as a node object reference
+    //      * @param {string} mapManNum - the first MapMan number (leftmost)
+    //      */
+    //     function modifySVGString(geneNode, mapManNum) {
+    //         if (typeof mapManNum === "undefined") {return;}
+    //         let newSVGString = decodeURIComponent(geneNode.data('svgDonut')).replace("</svg>", ""); //strip </svg> closing tag
+    //         newSVGString = newSVGString.replace('data:image/svg+xml;utf8,', "");
+    //         // console.log(newSVGString);
+    //         let xPosition = mapManNum.length > 1 ? '32%' : '41%'; //i.e. check if single or double digit
+    //         let fontSize = geneNode.data('queryGene') ? 22 : 13; //Determine whether gene is bigger or not (i.e. search gene or not)
+    //
+    //         newSVGString += `<text x='${xPosition}' y='59%' font-size='${fontSize}' font-family="Verdana" visibility="visible">${mapManNum}</text></svg>`;
+    //         newSVGString = 'data:image/svg+xml;utf8,' + encodeURIComponent(newSVGString);
+    //
+    //         geneNode.data('svgDonut', newSVGString);
+    //     }
+    //
+    // };
+    //
+    // /**
+    //  * @namespace {object} AIV
+    //  * @function hideMapMan - un/hides MapMan centre by un/enabling visibility attribute inside the svg
+    //  * @param {boolean} hide - boolean to determine if we are hiding or not
+    //  */
+    // AIV.hideMapMan = function(hide){
+    //     this.cy.startBatch();
+    //     this.cy.$('node[?MapManCode1]').forEach(function(node){ //check for nodes with a MapMan
+    //         let newSVGString = decodeURIComponent(node.data('svgDonut'));
+    //         newSVGString = newSVGString.replace('data:image/svg+xml;utf8,', "");
+    //         if (hide){
+    //             newSVGString = newSVGString.replace('"visible"', '"hidden"'); //change visbility attribute
+    //         }
+    //         else {
+    //             newSVGString = newSVGString.replace('"hidden"', '"visible"');
+    //         }
+    //         newSVGString = 'data:image/svg+xml;utf8,' + encodeURIComponent(newSVGString);
+    //         node.data('svgDonut', newSVGString);
+    //     });
+    //     this.cy.endBatch();
+    // };
 
     /**
      * @namespace {object} AIV
@@ -2011,7 +2018,7 @@
                 // console.log("Response:", promiseRes);
                 // Add Query node (user inputed in HTML form)
                 for (let i = 0; i < AIV.genesList.length; i++) {
-                    if (AIV.genesList[i].match(/^AT[1-5MC]G\d{5}$/i)) {
+                    if (AIV.genesList[i].match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
                         AIV.addNode(AIV.genesList[i], 'Protein', true);
                     }
                     else {
@@ -2102,30 +2109,30 @@
                 alertify.logPosition("top right");
                 alertify.error(`Error made when requesting to SUBA webservice, status code: ${err.status}`);
             })
-            .then(function(){ // chain this AJAX call to the above as the mapman relies on the drawing of the SVG pie donuts, i.e. wait for above sync code to finish
-                if (!AIV.mapManLoadState) { //don't make another ajax call if we already have MapMan data in our nodes (this logic is for our checkbox)
-                    return $.ajax({
-                        url: AIV.createGETMapManURL(),
-                        type: 'GET',
-                        dataType: 'json'
-                    });
-                }
-            })
-            .catch(function(err){
-                alertify.logPosition("top right");
-                alertify.error(`Error made when requesting to MapMan webservice (note: we cannot load more than 700 MapMan numbers), status code: ${err.status}`);
-            })
-            .then(function(resMapManJSON){
-                if (typeof resMapManJSON !== 'undefined' && resMapManJSON.status === "fail"){ throw new Error ('MapMan server call failed!')}
-                AIV.cy.startBatch();
-                AIV.processMapMan(resMapManJSON);
-                AIV.cy.endBatch();
-                AIV.mapManLoadState = true;
-            })
-            .catch(function(err){
-                alertify.logPosition("top right");
-                alertify.error(`Error processing MapMan data; ${err}`);
-            });
+            // .then(function(){ // chain this AJAX call to the above as the mapman relies on the drawing of the SVG pie donuts, i.e. wait for above sync code to finish
+            //     if (!AIV.mapManLoadState) { //don't make another ajax call if we already have MapMan data in our nodes (this logic is for our checkbox)
+            //         return $.ajax({
+            //             url: AIV.createGETMapManURL(),
+            //             type: 'GET',
+            //             dataType: 'json'
+            //         });
+            //     }
+            // })
+            // .catch(function(err){
+            //     alertify.logPosition("top right");
+            //     alertify.error(`Error made when requesting to MapMan webservice (note: we cannot load more than 700 MapMan numbers), status code: ${err.status}`);
+            // })
+            // .then(function(resMapManJSON){
+            //     if (typeof resMapManJSON !== 'undefined' && resMapManJSON.status === "fail"){ throw new Error ('MapMan server call failed!')}
+            //     AIV.cy.startBatch();
+            //     AIV.processMapMan(resMapManJSON);
+            //     AIV.cy.endBatch();
+            //     AIV.mapManLoadState = true;
+            // })
+            // .catch(function(err){
+            //     alertify.logPosition("top right");
+            //     alertify.error(`Error processing MapMan data; ${err}`);
+            // });
     };
 
     /**
