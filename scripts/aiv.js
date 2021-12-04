@@ -686,33 +686,33 @@
         oldEdges.restore();
     };
 
-    /**
-     * @namespace {object} AIV
-     * @function addDNANodesToAIVObj - Take in an object (interaction) data and add it to the 'global' state
-     * @param {object} DNAObjectData - as the interaction data as it comes in the GET request i.e.
-     *                                 {source: .., target:.., index: 2, ..}
-     */
-    AIV.addDNANodesToAIVObj = function(DNAObjectData) {
-        var chrNum = DNAObjectData.target.charAt(2).toUpperCase(); //if it was At2g04880 then it'd '2'
-        var name = chrNum; // Just for 'm' and 'c'
-
-        if (chrNum === "M") {
-            name = "Mitochondria";
-        }
-        else if (chrNum === "C"){
-            name = "Chloroplast";
-        }
-
-        // console.log("addDNANodes", DNAObjectData, "chrNum");
-        if (AIV.chromosomesAdded.hasOwnProperty(chrNum)){
-            AIV.chromosomesAdded[chrNum].push(DNAObjectData);
-        }
-        else { // Adding chromosome to DOM as it does not exist on app yet
-            AIV.addChromosomeToCytoscape(DNAObjectData, chrNum, name);
-            AIV.chromosomesAdded[chrNum] = [];
-            AIV.chromosomesAdded[chrNum].push(DNAObjectData); /*NB: The DNA data edge is stored here in the AIV object property (for each chr) instead of storing it in the edges themselves*/
-        }
-    };
+    // /**
+    //  * @namespace {object} AIV
+    //  * @function addDNANodesToAIVObj - Take in an object (interaction) data and add it to the 'global' state
+    //  * @param {object} DNAObjectData - as the interaction data as it comes in the GET request i.e.
+    //  *                                 {source: .., target:.., index: 2, ..}
+    //  */
+    // AIV.addDNANodesToAIVObj = function(DNAObjectData) {
+    //     var chrNum = DNAObjectData.target.charAt(2).toUpperCase(); //if it was At2g04880 then it'd '2'
+    //     var name = chrNum; // Just for 'm' and 'c'
+    //
+    //     if (chrNum === "M") {
+    //         name = "Mitochondria";
+    //     }
+    //     else if (chrNum === "C"){
+    //         name = "Chloroplast";
+    //     }
+    //
+    //     // console.log("addDNANodes", DNAObjectData, "chrNum");
+    //     if (AIV.chromosomesAdded.hasOwnProperty(chrNum)){
+    //         AIV.chromosomesAdded[chrNum].push(DNAObjectData);
+    //     }
+    //     else { // Adding chromosome to DOM as it does not exist on app yet
+    //         AIV.addChromosomeToCytoscape(DNAObjectData, chrNum, name);
+    //         AIV.chromosomesAdded[chrNum] = [];
+    //         AIV.chromosomesAdded[chrNum].push(DNAObjectData); /*NB: The DNA data edge is stored here in the AIV object property (for each chr) instead of storing it in the edges themselves*/
+    //     }
+    // };
 
     /**
      * This will add the chromosome nodes (that represent 1+ gene in them) to the cy core
@@ -743,34 +743,17 @@
      * @param {string} typeSource - as the type of protein it is, i.e. "effector" or "protein"
      * @param {string} target - as the target protein i.e. "At3g05230"
      * @param {string} typeTarget - as the type of protein it is, i.e. "effector" or "protein"
-     * @param {string} reference - as (if it exists) a published string of the DOI or Pubmed, etc. i.e. " "doi:10.1038/msb.2011.66"" or "None"
-     * @param {boolean} published - to whether this is published interaction data i.e. true
-     * @param {number | string} interologConfidence  - interolog confidence number, can be negative to positive, or zero (means experimentally validated prediction) i.e. -2121
+     * @param {number | string} total_hit - as (if it exists) a published string of the DOI or Pubmed, etc. i.e. " "doi:10.1038/msb.2011.66"" or "None"
+     * @param {number | string} num_species - to whether this is published interaction data i.e. true
+     * @param {number | string} quality  - interolog confidence number, can be negative to positive, or zero (means experimentally validated prediction) i.e. -2121
      * @param {string} databaseSource - where did this edge come from ? i.e. "BAR"
      * @param {number | string | null} R - the correlation coefficient of the coexpression data (microarray)
-     * @param {string} miTermsString - string of miTerms, can be delimited by a '|'
      */
-    AIV.addEdges = function(source, typeSource, target, typeTarget, reference, published, interologConfidence, databaseSource, R, miTermsString) {
+    AIV.addEdges = function(source, typeSource, target, typeTarget, total_hit, num_species, quality, databaseSource, R) {
         // let edge_id = typeSource + '_' + source + '_' + typeTarget + '_' + target;
         source = typeSource + '_' + source;
         target = typeTarget + '_' + target;
         let edge_id = source + '_' + target;
-        // process and format mi terms, specifically, look up via dictionary the annotations
-        let mi = [];
-        // console.log(target);
-        // console.log(miTermsString);
-        // need to do a check for where the database came from as it is parsed differently and that INTACT/BIOGRID already come with MI term annotations
-        if (miTermsString !== null && miTermsString !== undefined && databaseSource === "BAR"){
-            let miArray = miTermsString.split('|');
-            miArray.forEach(function(miTerm){
-                if (AIV.miTerms[miTerm] !== undefined){
-                    mi.push(`${miTerm} (${AIV.miTerms[miTerm]})`);
-                }
-            });
-        }
-        else if (databaseSource === "INTACT" || databaseSource === "BioGrid") {
-            mi.push(miTermsString.replace('"', ' ')); // replace for " inside '0018"(two hybrid)'
-        }
         this.cy.add([
             {
                 group: "edges",
@@ -779,44 +762,43 @@
                     id: edge_id,
                     source: source,
                     target: target,
-                    published: published,
-                    reference: published ? reference : false,
-                    interologConfidence: interologConfidence,
+                    total_hit: total_hit,
+                    num_species: num_species,
+                    quality: quality,
                     pearsonR: R,
-                    miAnnotated: mi,
                 },
             }
         ]);
     };
 
-    /**
-     * @namespace {object} AIV
-     * @function addNumberOfPDIsToNodeLabel - This function will take the name property of a DNA Chr node and parse it nicely for display on the cy core
-     */
-    AIV.addNumberOfPDIsToNodeLabel = function () {
-        for (let chr of Object.keys(this.chromosomesAdded)) {
-            let prevName = this.cy.getElementById(`DNA_Chr${chr}`).data('name');
-            this.cy.getElementById(`DNA_Chr${chr}`)
-                .data('name', `${prevName + "\n" + this.chromosomesAdded[chr].length + "\n"} PDIs`);
-        }
-    };
-
-    /**
-     * @namespace {object} AIV
-     * @function setDNANodesPosition - Lock the position of the DNA nodes at the bottom of the cy app
-     */
-    AIV.setDNANodesPosition = function () {
-        let xCoord = 50;
-        let viewportWidth = this.cy.width();
-        this.cy.$("node[id ^='DNA_Chr']:locked").unlock(); //if locked (for example during hide settings, unlock)
-        let numOfChromosomes = Object.keys(this.chromosomesAdded).length; //for A. th. the max would be 7
-        for (let chr of Object.keys(this.chromosomesAdded)) {
-            let chrNode = this.cy.getElementById(`DNA_Chr${chr}`);
-            chrNode.position({x: xCoord, y: this.cy.height() - (this.DNANodeSize/2 + 5) });
-            chrNode.lock(); //hardset the position of chr nodes to bottom
-            xCoord += viewportWidth/numOfChromosomes;
-        }
-    };
+    // /**
+    //  * @namespace {object} AIV
+    //  * @function addNumberOfPDIsToNodeLabel - This function will take the name property of a DNA Chr node and parse it nicely for display on the cy core
+    //  */
+    // AIV.addNumberOfPDIsToNodeLabel = function () {
+    //     for (let chr of Object.keys(this.chromosomesAdded)) {
+    //         let prevName = this.cy.getElementById(`DNA_Chr${chr}`).data('name');
+    //         this.cy.getElementById(`DNA_Chr${chr}`)
+    //             .data('name', `${prevName + "\n" + this.chromosomesAdded[chr].length + "\n"} PDIs`);
+    //     }
+    // };
+    //
+    // /**
+    //  * @namespace {object} AIV
+    //  * @function setDNANodesPosition - Lock the position of the DNA nodes at the bottom of the cy app
+    //  */
+    // AIV.setDNANodesPosition = function () {
+    //     let xCoord = 50;
+    //     let viewportWidth = this.cy.width();
+    //     this.cy.$("node[id ^='DNA_Chr']:locked").unlock(); //if locked (for example during hide settings, unlock)
+    //     let numOfChromosomes = Object.keys(this.chromosomesAdded).length; //for A. th. the max would be 7
+    //     for (let chr of Object.keys(this.chromosomesAdded)) {
+    //         let chrNode = this.cy.getElementById(`DNA_Chr${chr}`);
+    //         chrNode.position({x: xCoord, y: this.cy.height() - (this.DNANodeSize/2 + 5) });
+    //         chrNode.lock(); //hardset the position of chr nodes to bottom
+    //         xCoord += viewportWidth/numOfChromosomes;
+    //     }
+    // };
 
     /**
      * @namespace {object} AIV
@@ -826,107 +808,107 @@
         this.cy.on('resize', this.setDNANodesPosition.bind(AIV));
     };
 
-    /**
-     * @namespace {object} AIV
-     * @function createPDITable - We need to return a nicely formatted HTML table to be shown in the DNA tooltip. Take in an array of DNA interactions to be parsed and put appropriately in table tags
-     * @param {Array.<Object>} arrayPDIdata - array of interaction data i.e. [ {source: .., target:.., index: 2, ..}, {}, {}]
-     * @returns {string} - a nicely parsed HTML table
-     */
-    AIV.createPDItable = function (arrayPDIdata) {
-        console.log(arrayPDIdata);
-        let queryPDIsInChr = {};
-        let targets = [];
-        let pubmedRefHashTable = {};
-        let pValueHashTable = {};
-        let htmlTABLE = "<div class='pdi-table-scroll-pane'><table><tbody><tr><th></th>";
-        arrayPDIdata.forEach(function(PDI){ //populate local data to be used in another loop
-            // console.log("looping through each element of PDI array", PDI);
-            if (!queryPDIsInChr.hasOwnProperty(PDI.source)) {
-                queryPDIsInChr[PDI.source] = []; //create property with name of query/source gene
-            }
-            queryPDIsInChr[PDI.source].push(PDI.target);
-            if (targets.indexOf(PDI.target) === -1) {//To not repeat PDI for two queries with same PDI
-                targets.push(PDI.target);
-            }
-            pubmedRefHashTable[`${PDI.source}_${PDI.target}`] = PDI.reference;
-            pValueHashTable[`${PDI.source}_${PDI.target}`] = PDI.interolog_confidence;
-        });
-        for (let protein of Object.keys(queryPDIsInChr)) { //add query proteins to the header of table
-            htmlTABLE += `<th>${protein}<br>(${queryPDIsInChr[protein].length} PDIs)</th>`;
-        }
-        htmlTABLE += "</tr>";
-        targets.forEach(function(targetDNAGene){ //process remaining rows for each target DNA gene
-            htmlTABLE += `<tr><td>${targetDNAGene}</td>`;
-            for (let queryGene of Object.keys(queryPDIsInChr)) { //recall the keys are the source (i.e. query genes)
-                if (queryPDIsInChr[queryGene].indexOf(targetDNAGene) !== -1) { //indexOf returns -1 if not found
-                    let cellContent = "<td>";
-                    let fontawesome = '';
-                    if (pValueHashTable[queryGene + '_' + targetDNAGene] === 0){ //i.e. experimental PDI
-                       cellContent = "<td class='experimental-pdi-cell'>";
-                       fontawesome = 'flask';
-                       if (pubmedRefHashTable[queryGene + '_' + targetDNAGene] === "doi:10.1016/j.cell.2016.04.038"){ // TODO: change this to  DAP-Seq PMID once db is updated
-                           fontawesome = 'dna';
-                       }
-                    }
-                    else if (pValueHashTable[queryGene + '_' + targetDNAGene] > 0){ // i.e. predicted PDI
-                        cellContent = "<td class='predicted-pdi-cell'>";
-                        fontawesome = 'terminal';
-                    }
-                    AIV.memoizedSanRefIDs(pubmedRefHashTable[queryGene + '_' + targetDNAGene]).forEach(function(ref){
-                        cellContent += AIV.memoizedRetRefLink(ref, targetDNAGene, queryGene).replace(/("_blank">).*/, "$1") + /* replace innerHTML text returned */
-                            `<i class="fas fa-${fontawesome}"></i>` +
-                            '</a>';
-                    });
-                    htmlTABLE += cellContent + '</td>';
-                }
-                else {
-                    htmlTABLE += '<td></td>';
-                }
-            }
-            htmlTABLE += "</tr>";
-        });
-        htmlTABLE += "</tbody></table></div>";
-        // console.log("finished createPDITable function execution", queryPDIsInChr);
-        return htmlTABLE;
-    };
+    // /**
+    //  * @namespace {object} AIV
+    //  * @function createPDITable - We need to return a nicely formatted HTML table to be shown in the DNA tooltip. Take in an array of DNA interactions to be parsed and put appropriately in table tags
+    //  * @param {Array.<Object>} arrayPDIdata - array of interaction data i.e. [ {source: .., target:.., index: 2, ..}, {}, {}]
+    //  * @returns {string} - a nicely parsed HTML table
+    //  */
+    // AIV.createPDItable = function (arrayPDIdata) {
+    //     console.log(arrayPDIdata);
+    //     let queryPDIsInChr = {};
+    //     let targets = [];
+    //     let pubmedRefHashTable = {};
+    //     let pValueHashTable = {};
+    //     let htmlTABLE = "<div class='pdi-table-scroll-pane'><table><tbody><tr><th></th>";
+    //     arrayPDIdata.forEach(function(PDI){ //populate local data to be used in another loop
+    //         // console.log("looping through each element of PDI array", PDI);
+    //         if (!queryPDIsInChr.hasOwnProperty(PDI.source)) {
+    //             queryPDIsInChr[PDI.source] = []; //create property with name of query/source gene
+    //         }
+    //         queryPDIsInChr[PDI.source].push(PDI.target);
+    //         if (targets.indexOf(PDI.target) === -1) {//To not repeat PDI for two queries with same PDI
+    //             targets.push(PDI.target);
+    //         }
+    //         pubmedRefHashTable[`${PDI.source}_${PDI.target}`] = PDI.reference;
+    //         pValueHashTable[`${PDI.source}_${PDI.target}`] = PDI.interolog_confidence;
+    //     });
+    //     for (let protein of Object.keys(queryPDIsInChr)) { //add query proteins to the header of table
+    //         htmlTABLE += `<th>${protein}<br>(${queryPDIsInChr[protein].length} PDIs)</th>`;
+    //     }
+    //     htmlTABLE += "</tr>";
+    //     targets.forEach(function(targetDNAGene){ //process remaining rows for each target DNA gene
+    //         htmlTABLE += `<tr><td>${targetDNAGene}</td>`;
+    //         for (let queryGene of Object.keys(queryPDIsInChr)) { //recall the keys are the source (i.e. query genes)
+    //             if (queryPDIsInChr[queryGene].indexOf(targetDNAGene) !== -1) { //indexOf returns -1 if not found
+    //                 let cellContent = "<td>";
+    //                 let fontawesome = '';
+    //                 if (pValueHashTable[queryGene + '_' + targetDNAGene] === 0){ //i.e. experimental PDI
+    //                    cellContent = "<td class='experimental-pdi-cell'>";
+    //                    fontawesome = 'flask';
+    //                    if (pubmedRefHashTable[queryGene + '_' + targetDNAGene] === "doi:10.1016/j.cell.2016.04.038"){ // TODO: change this to  DAP-Seq PMID once db is updated
+    //                        fontawesome = 'dna';
+    //                    }
+    //                 }
+    //                 else if (pValueHashTable[queryGene + '_' + targetDNAGene] > 0){ // i.e. predicted PDI
+    //                     cellContent = "<td class='predicted-pdi-cell'>";
+    //                     fontawesome = 'terminal';
+    //                 }
+    //                 AIV.memoizedSanRefIDs(pubmedRefHashTable[queryGene + '_' + targetDNAGene]).forEach(function(ref){
+    //                     cellContent += AIV.memoizedRetRefLink(ref, targetDNAGene, queryGene).replace(/("_blank">).*/, "$1") + /* replace innerHTML text returned */
+    //                         `<i class="fas fa-${fontawesome}"></i>` +
+    //                         '</a>';
+    //                 });
+    //                 htmlTABLE += cellContent + '</td>';
+    //             }
+    //             else {
+    //                 htmlTABLE += '<td></td>';
+    //             }
+    //         }
+    //         htmlTABLE += "</tr>";
+    //     });
+    //     htmlTABLE += "</tbody></table></div>";
+    //     // console.log("finished createPDITable function execution", queryPDIsInChr);
+    //     return htmlTABLE;
+    // };
 
-    /**
-     * @namespace {object} AIV
-     * @function addChrNodeQTips -  Add qTips (tooltips) to 'Chromosome' Nodes
-     * Note we have to run a for loop on this to check where to add the qTips.
-     * Moreover the text is created from another function which will nicely return a HTML table
-     */
-    AIV.addChrNodeQtips = function () {
-        let that = this;
-        AIV.memoizedPDITable = _.memoize(this.createPDItable);
-        for (let chr of Object.keys(this.chromosomesAdded)){
-            // console.log(this.chromosomesAdded[chr], `chr${chr}`);
-            this.cy.on('mouseover', `node[id^='DNA_Chr${chr}']`, function(event){
-                var chrNode = event.target;
-                chrNode.qtip(
-                    {
-                        content:
-                            {
-                                title :
-                                    {
-                                        text :`Chromosome ${chr}`,
-                                        button: 'Close' //close button
-                                    },
-                                text: AIV.memoizedPDITable(that.chromosomesAdded[chr])
-                            },
-                        style    : { classes : 'qtip-light qtip-dna'},
-                        show:
-                            {
-                                solo : true, //only one qTip at a time
-                                event: `${event.type}`, // Same show event as triggered event handler
-                                ready: true, // Show the tooltip immediately upon creation
-                            },
-                        hide : false // Don't hide on any event except close button
-                    }
-                );
-            });
-        }
-    };
+    // /**
+    //  * @namespace {object} AIV
+    //  * @function addChrNodeQTips -  Add qTips (tooltips) to 'Chromosome' Nodes
+    //  * Note we have to run a for loop on this to check where to add the qTips.
+    //  * Moreover the text is created from another function which will nicely return a HTML table
+    //  */
+    // AIV.addChrNodeQtips = function () {
+    //     let that = this;
+    //     AIV.memoizedPDITable = _.memoize(this.createPDItable);
+    //     for (let chr of Object.keys(this.chromosomesAdded)){
+    //         // console.log(this.chromosomesAdded[chr], `chr${chr}`);
+    //         this.cy.on('mouseover', `node[id^='DNA_Chr${chr}']`, function(event){
+    //             var chrNode = event.target;
+    //             chrNode.qtip(
+    //                 {
+    //                     content:
+    //                         {
+    //                             title :
+    //                                 {
+    //                                     text :`Chromosome ${chr}`,
+    //                                     button: 'Close' //close button
+    //                                 },
+    //                             text: AIV.memoizedPDITable(that.chromosomesAdded[chr])
+    //                         },
+    //                     style    : { classes : 'qtip-light qtip-dna'},
+    //                     show:
+    //                         {
+    //                             solo : true, //only one qTip at a time
+    //                             event: `${event.type}`, // Same show event as triggered event handler
+    //                             ready: true, // Show the tooltip immediately upon creation
+    //                         },
+    //                     hide : false // Don't hide on any event except close button
+    //                 }
+    //             );
+    //         });
+    //     }
+    // };
 
     /**
      * @namespace {object} AIV
@@ -1251,7 +1233,11 @@
         let publicationsPPIArr = []; //local variable to store all unique publications that came from the JSON
         for (let geneQuery of Object.keys(data)) {
 
+            console.log(geneQuery)
+
             let dataSubset = data[geneQuery]; //'[]' expression to access an object property
+
+            console.log(dataSubset)
 
             // Add Nodes for each query
             for (let i = 0; i < dataSubset.length; i++) {
@@ -1261,8 +1247,19 @@
                 let edgeData = dataSubset[i]; // Data from the PHP API comes in the form of an array of PPIs/PDIs hence this variable name
                 let dbSrc = "BAR";
 
+                console.log(edgeData)
+
+
                 // let {index, source, target, reference, published, interolog_confidence, correlation_coefficient, mi} = edgeData;////
-                let {source, target, reference, published, correlation_coefficient, mi} = edgeData;
+                // let {source, target, total_hit, num_species, quality, correlation_coefficient} = edgeData;
+                let source = edgeData["protein_1"];
+                let target = edgeData["protein_2"];
+                let total_hit = edgeData["total_hit"];
+                let num_species = edgeData["num_species"];
+                let quality = edgeData["quality"];
+                let correlation_coefficient = edgeData["pcc"];
+
+                console.log(source, target, total_hit, num_species, quality, correlation_coefficient)
 
                 // Source, note that source is NEVER DNA
                 if (source.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
@@ -1271,16 +1268,6 @@
                     typeSource = 'Effector';
                 }
 
-                // // Target////
-                // if (target.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
-                //     if (index === '2') {
-                //         typeTarget = 'DNA';
-                //     } else {
-                //         typeTarget = 'Protein';
-                //     }
-                // } else {
-                //     typeTarget = 'Effector';
-                // }
                 // Target
                 if (target.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
                     typeTarget = 'Protein';
@@ -1288,59 +1275,22 @@
                     typeTarget = 'Effector';
                 }
 
-                //Build publication array for dropdown later
-                if (publicationsPPIArr.indexOf(reference) === -1){
-                    if (typeTarget === 'Protein' || typeTarget === 'Effector'){
-                        publicationsPPIArr.push(reference);
-                    }
+                if ( AIV.cy.getElementById(`${typeSource}_${source}`).empty()) { //only add source node if not already on app, recall our ids follow the format Protein_At2g10000
+                    this.addNode(source, typeSource);
                 }
-                // reformat the reference string to have the database name preappended to it with '-', keep newline delimiter
-                reference = reference.split('\n').map(x => dbSrc + "-" + x).join('\n');
-
-                // Coerce scientific notation to fixed decimal point number
-                // interolog_confidence = scientificToDecimal(interolog_confidence);////
-
-                if (typeTarget === "Protein" || typeTarget === "Effector") {
-                    if ( AIV.cy.getElementById(`${typeSource}_${source}`).empty()) { //only add source node if not already on app, recall our ids follow the format Protein_At2g10000
-                        this.addNode(source, typeSource);
-                    }
-                    if ( AIV.cy.getElementById(`${typeTarget}_${target}`).empty()) {
-                        this.addNode(target, typeTarget);
-                    }
-                } else { //i.e. typeTarget === "DNA"
-                    this.addDNANodesToAIVObj(edgeData); //pass the DNA in the JSON format we GET on
+                if ( AIV.cy.getElementById(`${typeTarget}_${target}`).empty()) {
+                    this.addNode(target, typeTarget);
                 }
 
-                // if (index !== '2') { //i.e. PPI edge////
-                    let edgeSelector = `${typeSource}_${source}_${typeTarget}_${target}`;
-                    if ( AIV.cy.$id(edgeSelector).empty() ) { //Check if edge already added from perhaps the PSICQUIC webservices
-                        //TODO: change this and param of addEdge
-                        this.addEdges(source, typeSource, target, typeTarget, reference, published, interolog_confidence, dbSrc, correlation_coefficient, mi);
-                    }
-                    else { //PSICQUIC edges added first
-                        if (mi !== null && mi !== undefined){
-                            let tempMiArr = [];
-                            let miArray = mi.split('|');
-                            miArray.forEach(function(miTerm){
-                                if (AIV.miTerms[miTerm] !== undefined){
-                                    tempMiArr.push(`${miTerm} (${AIV.miTerms[miTerm]})`);
-                                }
-                            });
-                            AIV.cy.$id(edgeSelector).data({'miAnnotated' : AIV.cy.$id(edgeSelector).data('miAnnotated').concat(tempMiArr)}); // append new miTerm to current arr
-                        }
-                        AIV.cy.$id(edgeSelector).data({
-                            reference : reference,
-                            interologConfidence : interolog_confidence,
-                            pearsonR : correlation_coefficient,
-                            published : true, // must be true if PSICQUIC edges loaded
-                        });
-                    }
-                // }
-                // else if ( index === '2') { // PDI edge////
-                //     if (this.cy.getElementById(`${typeSource}_${source}_DNA_Chr${target.charAt(2)}`).length === 0){ // If we don't already have an edge from this gene to a chromosome
-                //         this.addEdges(source, typeSource, `Chr${target.charAt(2)}`, typeTarget /*DNA*/, reference, published, interolog_confidence, dbSrc, correlation_coefficient, mi);
-                //     }
-                // }
+                let edgeSelector = `${typeSource}_${source}_${typeTarget}_${target}`;
+                if ( AIV.cy.$id(edgeSelector).empty() ) { //Check if edge already added from perhaps the PSICQUIC webservices
+                    this.addEdges(source, typeSource, target, typeTarget, total_hit, num_species, quality, dbSrc, correlation_coefficient);
+                }
+                else {
+                    AIV.cy.$id(edgeSelector).data({
+                        pearsonR : correlation_coefficient,
+                    });
+                }
             }
         } //end of adding nodes and edges
 
@@ -1996,26 +1946,30 @@
     /**
      * @namespace {object} AIV
      * @function loadData - Load data main function
-     * @returns {boolean} - True if the data is laoded
+     * @returns {boolean} - True if the data is loaded
      */
     AIV.loadData = function() {
-        // Dynamically build an array of promises for the Promise.all call later
-        var promisesArr = [];
-
-        if ($('#queryBAR').is(':checked')) {
-            promisesArr.push(this.createBARAjaxPromise());
-        }
-        if ($('#queryIntAct').is(':checked')) {
-            promisesArr = promisesArr.concat(this.createINTACTAjaxPromise());
-        }
-        if ($('#queryBioGrid').is(':checked')) {
-            promisesArr = promisesArr.concat(this.createBioGridAjaxPromise());
-        }
+        //
+        // // Dynamically build an array of promises for the Promise.all call later
+        // var promisesArr = [];
+        //
+        // if ($('#queryBAR').is(':checked')) {
+        //     promisesArr.push(this.createBARAjaxPromise());
+        // }
+        // // if ($('#queryIntAct').is(':checked')) {
+        // //     promisesArr = promisesArr.concat(this.createINTACTAjaxPromise());
+        // // }
+        // // if ($('#queryBioGrid').is(':checked')) {
+        // //     promisesArr = promisesArr.concat(this.createBioGridAjaxPromise());
+        // // }
+        //
         // console.log(promisesArr);
+        let serviceURL = 'https://bar.utoronto.ca/api_dev/interactions/rice/'+this.genesList.toString();
 
-        Promise.all(promisesArr)
-            .then(function(promiseRes) {
-                // console.log("Response:", promiseRes);
+        fetch(serviceURL)
+            .then(res=>res.json())
+            .then(data => {
+                console.log("Response:", data);
                 // Add Query node (user inputed in HTML form)
                 for (let i = 0; i < AIV.genesList.length; i++) {
                     if (AIV.genesList[i].match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
@@ -2025,19 +1979,20 @@
                         AIV.addNode(AIV.genesList[i], 'Effector', true);
                     }
                 }
-
-                // Parse data and make cy elements object
-                for (let i = 0; i < promiseRes.length; i++) {
-                    if (promiseRes[i].ajaxCallType === "BAR"){
-                        AIV.parseBARInteractionsData(promiseRes[i].res);
-                    }
-                    else {
-                        AIV.parsePSICQUICInteractionsData(promiseRes[i].res, promiseRes[i].queryGene, promiseRes[i].ajaxCallType);
-                    }
-                }
+                console.log("Response:", data);
+                AIV.parseBARInteractionsData(data);
+                // // Parse data and make cy elements object
+                // for (let i = 0; i < promiseRes.length; i++) {
+                //     if (promiseRes[i].ajaxCallType === "BAR"){
+                //         AIV.parseBARInteractionsData(promiseRes[i].res);
+                //     }
+                //     else {
+                //         AIV.parsePSICQUICInteractionsData(promiseRes[i].res, promiseRes[i].queryGene, promiseRes[i].ajaxCallType);
+                //     }
+                // }
 
                 // Update styling and add qTips as nodes have now been added to the cy core
-
+                console.log("Response:", data);
                 AIV.createTableFromEdges();
                 // AIV.addInteractionRowsToDOM();
                 // console.log(AIV.cy.nodes().length, 'nodes');
@@ -2045,19 +2000,19 @@
                 //Below lines are to push to a temp array to make a POST for gene summaries
                 let nodeAgiNames = [];
                 AIV.parseProteinNodes((nodeID) => nodeAgiNames.push(nodeID));
-                for (let chr of Object.keys(AIV.chromosomesAdded)) {
-                    nodeAgiNames = nodeAgiNames.concat(AIV.chromosomesAdded[chr].map( prop => prop.target));
-                }
+                // for (let chr of Object.keys(AIV.chromosomesAdded)) {
+                //     nodeAgiNames = nodeAgiNames.concat(AIV.chromosomesAdded[chr].map( prop => prop.target));
+                // }
                 let uniqueNodeAgiNames = Array.from(new Set(nodeAgiNames)); // remove duplicates to make quicker requests
-                AIV.fetchGeneAnnoForTable(uniqueNodeAgiNames);
-                AIV.addChrNodeQtips();
-                AIV.addNumberOfPDIsToNodeLabel();
+                // AIV.fetchGeneAnnoForTable(uniqueNodeAgiNames);
+                // AIV.addChrNodeQtips();
+                // AIV.addNumberOfPDIsToNodeLabel();
                 AIV.addProteinNodeQtips();
                 AIV.addPPIEdgeQtips();
                 AIV.addEffectorNodeQtips();
                 AIV.cy.style(AIV.getCyStyle()).update();
-                AIV.setDNANodesPosition();
-                AIV.resizeEListener();
+                // AIV.setDNANodesPosition();
+                // AIV.resizeEListener();
                 AIV.addContextMenus();
                 AIV.cy.layout(AIV.getCySpreadLayout()).run();
 
@@ -2074,6 +2029,84 @@
                 alertify.error(`Error during fetching interaction data, try BAR if using PSICQUIC services, status code: ${err.status}`);
             })
             .then(AIV.returnSVGandMapManThenChain);
+
+        // // Dynamically build an array of promises for the Promise.all call later
+        // var promisesArr = [];
+        //
+        // if ($('#queryBAR').is(':checked')) {
+        //     promisesArr.push(this.createBARAjaxPromise());
+        // }
+        // // if ($('#queryIntAct').is(':checked')) {
+        // //     promisesArr = promisesArr.concat(this.createINTACTAjaxPromise());
+        // // }
+        // // if ($('#queryBioGrid').is(':checked')) {
+        // //     promisesArr = promisesArr.concat(this.createBioGridAjaxPromise());
+        // // }
+        //
+        // console.log(promisesArr);
+        //
+        // Promise.all(promisesArr)
+        //     .then(function(promiseRes) {
+        //         console.log("Response:", promiseRes);
+        //         // Add Query node (user inputed in HTML form)
+        //         for (let i = 0; i < AIV.genesList.length; i++) {
+        //             if (AIV.genesList[i].match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
+        //                 AIV.addNode(AIV.genesList[i], 'Protein', true);
+        //             }
+        //             else {
+        //                 AIV.addNode(AIV.genesList[i], 'Effector', true);
+        //             }
+        //         }
+        //
+        //         // Parse data and make cy elements object
+        //         for (let i = 0; i < promiseRes.length; i++) {
+        //             if (promiseRes[i].ajaxCallType === "BAR"){
+        //                 AIV.parseBARInteractionsData(promiseRes[i].res);
+        //             }
+        //             else {
+        //                 AIV.parsePSICQUICInteractionsData(promiseRes[i].res, promiseRes[i].queryGene, promiseRes[i].ajaxCallType);
+        //             }
+        //         }
+        //
+        //         // Update styling and add qTips as nodes have now been added to the cy core
+        //
+        //         AIV.createTableFromEdges();
+        //         // AIV.addInteractionRowsToDOM();
+        //         // console.log(AIV.cy.nodes().length, 'nodes');
+        //         // console.log(AIV.cy.edges().length, 'edges');
+        //         //Below lines are to push to a temp array to make a POST for gene summaries
+        //         let nodeAgiNames = [];
+        //         AIV.parseProteinNodes((nodeID) => nodeAgiNames.push(nodeID));
+        //         // for (let chr of Object.keys(AIV.chromosomesAdded)) {
+        //         //     nodeAgiNames = nodeAgiNames.concat(AIV.chromosomesAdded[chr].map( prop => prop.target));
+        //         // }
+        //         let uniqueNodeAgiNames = Array.from(new Set(nodeAgiNames)); // remove duplicates to make quicker requests
+        //         // AIV.fetchGeneAnnoForTable(uniqueNodeAgiNames);
+        //         // AIV.addChrNodeQtips();
+        //         // AIV.addNumberOfPDIsToNodeLabel();
+        //         AIV.addProteinNodeQtips();
+        //         AIV.addPPIEdgeQtips();
+        //         AIV.addEffectorNodeQtips();
+        //         AIV.cy.style(AIV.getCyStyle()).update();
+        //         // AIV.setDNANodesPosition();
+        //         // AIV.resizeEListener();
+        //         AIV.addContextMenus();
+        //         AIV.cy.layout(AIV.getCySpreadLayout()).run();
+        //
+        //         $('#refCheckboxes').prepend(
+        //             "<label for='allCheck'><input type='checkbox' id='allCheck'> Filter All/Reset</label>"
+        //         );
+        //         AIV.filterAllElistener(AIV);
+        //
+        //         document.getElementById('loading').classList.add('loaded'); //hide loading spinner
+        //         $('#loading').children().remove(); //delete the loading spinner divs
+        //     })
+        //     .catch(function(err){
+        //         console.error(err.name + ': ' + err.message)
+        //         alertify.logPosition("top right");
+        //         alertify.error(`Error during fetching interaction data, try BAR if using PSICQUIC services, status code: ${err.status}`);
+        //     })
+        //     .then(AIV.returnSVGandMapManThenChain);
 
     };
 
@@ -2140,31 +2173,33 @@
      * @returns {Promise.<{res: object, ajaxCallType: string}>|*}
      */
     AIV.createBARAjaxPromise = function() {
-        // AGI IDs
-        let postObj = {};
-        postObj.loci = "";
-        for (var i = 0; i < this.genesList.length; i++) {
-            postObj.loci += this.genesList[i] + ",";
-        }
-        postObj.loci = postObj.loci.slice(0, -1);
+        // //AGI IDs
+        // let postObj = {};
+        // postObj.loci = "";
+        // for (var i = 0; i < this.genesList.length; i++) {
+        //     postObj.loci += this.genesList[i] + ",";
+        // }
+        // postObj.loci = postObj.loci.slice(0, -1);
 
-        //Recursive
-        postObj.recursive = $('#recursive').is(':checked');
 
-        // Published
-        postObj.published = $('#published').is(':checked');
+        // //Recursive
+        // postObj.recursive = $('#recursive').is(':checked');
 
-        // DNA
-        postObj.querydna = $('#queryDna').is(':checked');
+        // // Published
+        // postObj.published = $('#published').is(':checked');
+        //
+        // // DNA
+        // postObj.querydna = $('#queryDna').is(':checked');
 
-        let serviceURL = '//bar.utoronto.ca/interactions2/cgi-bin/get_interactions_dapseq.php';
+        // let serviceURL = '//bar.utoronto.ca/interactions2/cgi-bin/get_interactions_dapseq.php';////
+        let serviceURL = 'https://bar.utoronto.ca/api_dev/interactions/rice/';
 
         return $.ajax({
-            url: serviceURL,
-            type: 'POST',
-            data: JSON.stringify(postObj),
+            url: serviceURL.concat(this.genesList.toString()),
+            type: 'GET',
+            // data: this.genesList.toString(),
             contentType: "application/json",
-            dataType: "json"
+            dataType: "string"
         })
             .then( res => ( {res: res, ajaxCallType: 'BAR'} )); //ajaxCallType for identifying when parsing Promise.all response array
     };
