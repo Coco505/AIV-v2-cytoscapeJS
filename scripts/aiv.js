@@ -743,13 +743,13 @@
      * @param {string} typeSource - as the type of protein it is, i.e. "effector" or "protein"
      * @param {string} target - as the target protein i.e. "At3g05230"
      * @param {string} typeTarget - as the type of protein it is, i.e. "effector" or "protein"
-     * @param {number | string} total_hit - as (if it exists) a published string of the DOI or Pubmed, etc. i.e. " "doi:10.1038/msb.2011.66"" or "None"
+     * @param {number | string} total_hits - as (if it exists) a published string of the DOI or Pubmed, etc. i.e. " "doi:10.1038/msb.2011.66"" or "None"
      * @param {number | string} num_species - to whether this is published interaction data i.e. true
      * @param {number | string} quality  - interolog confidence number, can be negative to positive, or zero (means experimentally validated prediction) i.e. -2121
      * @param {string} databaseSource - where did this edge come from ? i.e. "BAR"
      * @param {number | string | null} R - the correlation coefficient of the coexpression data (microarray)
      */
-    AIV.addEdges = function(source, typeSource, target, typeTarget, total_hit, num_species, quality, databaseSource, R) {
+    AIV.addEdges = function(source, typeSource, target, typeTarget, total_hits, num_species, quality, databaseSource, R) {
         // let edge_id = typeSource + '_' + source + '_' + typeTarget + '_' + target;
         source = typeSource + '_' + source;
         target = typeTarget + '_' + target;
@@ -762,7 +762,7 @@
                     id: edge_id,
                     source: source,
                     target: target,
-                    total_hit: total_hit,
+                    total_hit: total_hits,
                     num_species: num_species,
                     quality: quality,
                     pearsonR: R,
@@ -1118,10 +1118,15 @@
                                     text: edgeData.source.replace("_", " ") + " to " + edgeData.target.replace("_", " "),
                                     button: "Close"
                                 },
-                            text : that.createPPIEdgeText( edgeData.source, edgeData.target, edgeData.reference, edgeData.interologConfidence ) +
-                            (edgeData.interologConfidence >= 1 ? `<p>Interolog Confidence: ${edgeData.interologConfidence}</p>` : "") + //ternary operator return the interolog confidence value only not the SPPI rank
-                            `<p>Correlation Coefficient: ${edgeData.pearsonR} </p>` +
-                            (edgeData.miAnnotated.length > 0 ? `<p>MI Term(s): ${edgeData.miAnnotated.join(', ')} </p>` : ""),
+                            // text : that.createPPIEdgeText( edgeData.source, edgeData.target, edgeData.reference, edgeData.interologConfidence ) +
+                            // (edgeData.interologConfidence >= 1 ? `<p>Interolog Confidence: ${edgeData.interologConfidence}</p>` : "") + //ternary operator return the interolog confidence value only not the SPPI rank
+                            // `<p>Correlation Coefficient: ${edgeData.pearsonR} </p>` +
+                            // (edgeData.miAnnotated.length > 0 ? `<p>MI Term(s): ${edgeData.miAnnotated.join(', ')} </p>` : ""),
+                            text :`<p>Ref: <a href="https://dx.doi.org/10.1186/1939-8433-5-15" target="_blank"> BAR - DOI ${10.1186/1939-8433-5-15} </a> </p>`+
+                                `<p>Total hits: ${edgeData.total_hit} </p>` +
+                                `<p>Number of species: ${edgeData.num_species} </p>` +
+                                `<p>Quality: ${edgeData.quality} </p>` +
+                                `<p>Correlation Coefficient: ${edgeData.pearsonR} </p>`,
                         },
                     style  : { classes : 'qtip-light qtip-ppi-edge' },
                     show:
@@ -1251,15 +1256,15 @@
 
 
                 // let {index, source, target, reference, published, interolog_confidence, correlation_coefficient, mi} = edgeData;////
-                // let {source, target, total_hit, num_species, quality, correlation_coefficient} = edgeData;
+                // let {source, target, total_hits, num_species, quality, correlation_coefficient} = edgeData;
                 let source = edgeData["protein_1"];
                 let target = edgeData["protein_2"];
-                let total_hit = edgeData["total_hit"];
-                let num_species = edgeData["num_species"];
-                let quality = edgeData["quality"];
+                let total_hits = edgeData["total_hits"];
+                let num_species = edgeData["Num_species"];
+                let quality = edgeData["Quality"];
                 let correlation_coefficient = edgeData["pcc"];
 
-                console.log(source, target, total_hit, num_species, quality, correlation_coefficient)
+                console.log(source, target, total_hits, num_species, quality, correlation_coefficient)
 
                 // Source, note that source is NEVER DNA
                 if (source.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
@@ -1284,10 +1289,13 @@
 
                 let edgeSelector = `${typeSource}_${source}_${typeTarget}_${target}`;
                 if ( AIV.cy.$id(edgeSelector).empty() ) { //Check if edge already added from perhaps the PSICQUIC webservices
-                    this.addEdges(source, typeSource, target, typeTarget, total_hit, num_species, quality, dbSrc, correlation_coefficient);
+                    this.addEdges(source, typeSource, target, typeTarget, total_hits, num_species, quality, dbSrc, correlation_coefficient);
                 }
                 else {
                     AIV.cy.$id(edgeSelector).data({
+                        total_hits: total_hits,
+                        num_species: num_species,
+                        quality: quality,
                         pearsonR : correlation_coefficient,
                     });
                 }
