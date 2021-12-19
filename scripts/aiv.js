@@ -922,6 +922,10 @@
         this.cy.on('mouseover', 'node[id^="Protein"]', function(event) {
             let protein = event.target;
             let agiName = protein.data("name");
+            // console.log(protein.data);
+            console.log(protein);
+            // console.log(agiName);
+
             let exprOverlayChkbox = document.getElementById('exprnOverlayChkbox');
             protein.qtip(
                 {
@@ -935,8 +939,8 @@
                                     text :
                                         function(event, api) {
                                             let HTML = "";
-                                            HTML += AIV.showDesc(protein);
-                                            HTML += AIV.showSynonyms(protein);
+                                            // HTML += AIV.showDesc(protein);
+                                            // HTML += AIV.showSynonyms(protein);
                                             // HTML += `<p>${AIV.showMapMan(protein)}</p>`;
                                             HTML += `<p>${AIV.displaySUBA4qTipData(protein)}</p>`;
                                             if (AIV.exprLoadState.absolute && exprOverlayChkbox.checked){
@@ -970,7 +974,7 @@
      * @param {boolean} [needNodeRef=false] - optional boolean to determine if callback should be performed on node object reference
      */
     AIV.parseProteinNodes = function(cb, needNodeRef=false){
-        this.cy.filter("node[id ^= 'Protein_At']").forEach(function(node){
+        this.cy.filter("node[id ^= 'Protein']").forEach(function(node){
             let nodeID = node.data('name');
             if (nodeID.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) { //only get AGI IDs, i.e. exclude effectors
                 if (needNodeRef){
@@ -1029,6 +1033,9 @@
      */
     AIV.displaySUBA4qTipData = function(protein) {
         let locData = protein.data('localizationData');
+
+        console.log(locData);
+
         if (!locData) {return "";} //exit if undefined
         let baseString = "";
         for (let i = 0; i < locData.length ;i++){
@@ -1037,6 +1044,7 @@
                 baseString += `<p>${Object.keys(locData[i])[0]}: ${(locPercent*100).toFixed(1)}%</p>`;
             }
         }
+
         return baseString;
     };
 
@@ -1238,11 +1246,10 @@
         let publicationsPPIArr = []; //local variable to store all unique publications that came from the JSON
         for (let geneQuery of Object.keys(data)) {
 
-            console.log(geneQuery)
+
 
             let dataSubset = data[geneQuery]; //'[]' expression to access an object property
 
-            console.log(dataSubset)
 
             // Add Nodes for each query
             for (let i = 0; i < dataSubset.length; i++) {
@@ -1252,7 +1259,7 @@
                 let edgeData = dataSubset[i]; // Data from the PHP API comes in the form of an array of PPIs/PDIs hence this variable name
                 let dbSrc = "BAR";
 
-                console.log(edgeData)
+
 
 
                 // let {index, source, target, reference, published, interolog_confidence, correlation_coefficient, mi} = edgeData;////
@@ -1264,7 +1271,7 @@
                 let quality = edgeData["Quality"];
                 let correlation_coefficient = edgeData["pcc"];
 
-                console.log(source, target, total_hits, num_species, quality, correlation_coefficient)
+
 
                 // Source, note that source is NEVER DNA
                 if (source.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
@@ -1593,11 +1600,12 @@
 
         var reqJSON =
             {
-                AGI_IDs : [],
+                species: 'rice',
+                genes : [],
             };
-        this.parseProteinNodes(nodeID => reqJSON.AGI_IDs.push( nodeID ));
+        this.parseProteinNodes(nodeID => reqJSON.genes.push( nodeID.concat('.1') ));
 
-        reqJSON.include_predicted = $("#exprPredLocEye").hasClass('fa-eye');
+        console.log(reqJSON);
 
         return reqJSON;
     };
@@ -1618,16 +1626,23 @@
 
         AIV.locCompoundNodes = [];
 
-        Object.keys(SUBADATA).forEach(function(geneAGIName){
-            let nodeID = geneAGIName; //AT1G04170 to At1g04170
-            let geneSUBAData = SUBADATA[geneAGIName];
-            if (Object.keys(geneSUBAData.data).length){ //For nodes with any localization data
-                let majorityLoc = Object.keys(geneSUBAData.data[0])[0];
+
+
+        let geneLocalizations = SUBADATA["data"];
+
+
+        Object.keys(geneLocalizations).forEach(function(geneAGIName){
+            let nodeID = geneAGIName.slice(0,-2); //remove .1 at the end
+            let localization = geneLocalizations[geneAGIName][0].split(",");
+            if (localization.length){ //For nodes with any localization data
+                let majorityLoc = localization[0];
+                // console.log(majorityLoc);
+                // console.log(localization);
+                // console.log(calcLocPcts(localization));
+
                 AIV.cy.$('node[name = "' + nodeID + '"]')
                     .data({
-                        predictedSUBA :  ( geneSUBAData.includes_predicted === "yes" ),
-                        experimentalSUBA : ( geneSUBAData.includes_experimental === "yes" ),
-                        localizationData: calcLocPcts( geneSUBAData.data),
+                        localizationData: calcLocPcts(localization),
                         localization : majorityLoc, //assign localization to highest loc score
                     });
                 if (AIV.locCompoundNodes.indexOf(majorityLoc) === -1 ){
@@ -1637,8 +1652,8 @@
             else { //For nodes without any localization data
                 AIV.cy.$('node[name = "' + nodeID + '"]')
                     .data({
-                        predictedSUBA : false,
-                        experimentalSUBA : false,
+                        // predictedSUBA : false,
+                        // experimentalSUBA : false,
                         localizationData: [],
                         localization: "unknown"
                     });
@@ -1651,12 +1666,11 @@
 
         AIV.cy.endBatch();
 
-        function calcLocPcts(subaLocData){
+        function calcLocPcts(localization){
             let retObj = [];
-            let deno = 0;
-            subaLocData.forEach(locScore => deno += Object.values(locScore)[0]); // use [0] because only one property is in the obj i.e. [{"nucleus": 20},{"cytosol": 10}]
-            subaLocData.forEach(function(locScore){
-                retObj.push({[Object.keys(locScore)[0]] : Object.values(locScore)[0]/deno});
+
+            localization.forEach(function(loc){
+                retObj.push({[loc]: 1/localization.length});
             });
             return retObj;
         }
@@ -1971,13 +1985,13 @@
         // //     promisesArr = promisesArr.concat(this.createBioGridAjaxPromise());
         // // }
         //
-        // console.log(promisesArr);
+
         let serviceURL = 'https://bar.utoronto.ca/api_dev/interactions/rice/'+this.genesList.toString();
 
         fetch(serviceURL)
             .then(res=>res.json())
             .then(data => {
-                console.log("Response:", data);
+
                 // Add Query node (user inputed in HTML form)
                 for (let i = 0; i < AIV.genesList.length; i++) {
                     if (AIV.genesList[i].match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
@@ -1987,7 +2001,7 @@
                         AIV.addNode(AIV.genesList[i], 'Effector', true);
                     }
                 }
-                console.log("Response:", data);
+
                 AIV.parseBARInteractionsData(data);
                 // // Parse data and make cy elements object
                 // for (let i = 0; i < promiseRes.length; i++) {
@@ -2000,7 +2014,7 @@
                 // }
 
                 // Update styling and add qTips as nodes have now been added to the cy core
-                console.log("Response:", data);
+
                 AIV.createTableFromEdges();
                 // AIV.addInteractionRowsToDOM();
                 // console.log(AIV.cy.nodes().length, 'nodes');
@@ -2031,91 +2045,14 @@
 
                 document.getElementById('loading').classList.add('loaded'); //hide loading spinner
                 $('#loading').children().remove(); //delete the loading spinner divs
+
+                console.log(JSON.stringify( AIV.returnLocalizationPOSTJSON()))
             })
             .catch(function(err){
                 alertify.logPosition("top right");
                 alertify.error(`Error during fetching interaction data, try BAR if using PSICQUIC services, status code: ${err.status}`);
             })
             .then(AIV.returnSVGandMapManThenChain);
-
-        // // Dynamically build an array of promises for the Promise.all call later
-        // var promisesArr = [];
-        //
-        // if ($('#queryBAR').is(':checked')) {
-        //     promisesArr.push(this.createBARAjaxPromise());
-        // }
-        // // if ($('#queryIntAct').is(':checked')) {
-        // //     promisesArr = promisesArr.concat(this.createINTACTAjaxPromise());
-        // // }
-        // // if ($('#queryBioGrid').is(':checked')) {
-        // //     promisesArr = promisesArr.concat(this.createBioGridAjaxPromise());
-        // // }
-        //
-        // console.log(promisesArr);
-        //
-        // Promise.all(promisesArr)
-        //     .then(function(promiseRes) {
-        //         console.log("Response:", promiseRes);
-        //         // Add Query node (user inputed in HTML form)
-        //         for (let i = 0; i < AIV.genesList.length; i++) {
-        //             if (AIV.genesList[i].match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
-        //                 AIV.addNode(AIV.genesList[i], 'Protein', true);
-        //             }
-        //             else {
-        //                 AIV.addNode(AIV.genesList[i], 'Effector', true);
-        //             }
-        //         }
-        //
-        //         // Parse data and make cy elements object
-        //         for (let i = 0; i < promiseRes.length; i++) {
-        //             if (promiseRes[i].ajaxCallType === "BAR"){
-        //                 AIV.parseBARInteractionsData(promiseRes[i].res);
-        //             }
-        //             else {
-        //                 AIV.parsePSICQUICInteractionsData(promiseRes[i].res, promiseRes[i].queryGene, promiseRes[i].ajaxCallType);
-        //             }
-        //         }
-        //
-        //         // Update styling and add qTips as nodes have now been added to the cy core
-        //
-        //         AIV.createTableFromEdges();
-        //         // AIV.addInteractionRowsToDOM();
-        //         // console.log(AIV.cy.nodes().length, 'nodes');
-        //         // console.log(AIV.cy.edges().length, 'edges');
-        //         //Below lines are to push to a temp array to make a POST for gene summaries
-        //         let nodeAgiNames = [];
-        //         AIV.parseProteinNodes((nodeID) => nodeAgiNames.push(nodeID));
-        //         // for (let chr of Object.keys(AIV.chromosomesAdded)) {
-        //         //     nodeAgiNames = nodeAgiNames.concat(AIV.chromosomesAdded[chr].map( prop => prop.target));
-        //         // }
-        //         let uniqueNodeAgiNames = Array.from(new Set(nodeAgiNames)); // remove duplicates to make quicker requests
-        //         // AIV.fetchGeneAnnoForTable(uniqueNodeAgiNames);
-        //         // AIV.addChrNodeQtips();
-        //         // AIV.addNumberOfPDIsToNodeLabel();
-        //         AIV.addProteinNodeQtips();
-        //         AIV.addPPIEdgeQtips();
-        //         AIV.addEffectorNodeQtips();
-        //         AIV.cy.style(AIV.getCyStyle()).update();
-        //         // AIV.setDNANodesPosition();
-        //         // AIV.resizeEListener();
-        //         AIV.addContextMenus();
-        //         AIV.cy.layout(AIV.getCySpreadLayout()).run();
-        //
-        //         $('#refCheckboxes').prepend(
-        //             "<label for='allCheck'><input type='checkbox' id='allCheck'> Filter All/Reset</label>"
-        //         );
-        //         AIV.filterAllElistener(AIV);
-        //
-        //         document.getElementById('loading').classList.add('loaded'); //hide loading spinner
-        //         $('#loading').children().remove(); //delete the loading spinner divs
-        //     })
-        //     .catch(function(err){
-        //         console.error(err.name + ': ' + err.message)
-        //         alertify.logPosition("top right");
-        //         alertify.error(`Error during fetching interaction data, try BAR if using PSICQUIC services, status code: ${err.status}`);
-        //     })
-        //     .then(AIV.returnSVGandMapManThenChain);
-
     };
 
     /**
@@ -2124,7 +2061,7 @@
      */
     AIV.returnSVGandMapManThenChain = function () {
         return $.ajax({
-            url: "https://bar.utoronto.ca/~vlau/suba4.php",
+            url: 'https://bar.utoronto.ca/api_dev/loc/',
             type: "POST",
             data: JSON.stringify( AIV.returnLocalizationPOSTJSON() ),
             contentType : 'application/json',
@@ -2150,30 +2087,6 @@
                 alertify.logPosition("top right");
                 alertify.error(`Error made when requesting to SUBA webservice, status code: ${err.status}`);
             })
-            // .then(function(){ // chain this AJAX call to the above as the mapman relies on the drawing of the SVG pie donuts, i.e. wait for above sync code to finish
-            //     if (!AIV.mapManLoadState) { //don't make another ajax call if we already have MapMan data in our nodes (this logic is for our checkbox)
-            //         return $.ajax({
-            //             url: AIV.createGETMapManURL(),
-            //             type: 'GET',
-            //             dataType: 'json'
-            //         });
-            //     }
-            // })
-            // .catch(function(err){
-            //     alertify.logPosition("top right");
-            //     alertify.error(`Error made when requesting to MapMan webservice (note: we cannot load more than 700 MapMan numbers), status code: ${err.status}`);
-            // })
-            // .then(function(resMapManJSON){
-            //     if (typeof resMapManJSON !== 'undefined' && resMapManJSON.status === "fail"){ throw new Error ('MapMan server call failed!')}
-            //     AIV.cy.startBatch();
-            //     AIV.processMapMan(resMapManJSON);
-            //     AIV.cy.endBatch();
-            //     AIV.mapManLoadState = true;
-            // })
-            // .catch(function(err){
-            //     alertify.logPosition("top right");
-            //     alertify.error(`Error processing MapMan data; ${err}`);
-            // });
     };
 
     /**
