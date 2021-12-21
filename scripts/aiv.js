@@ -43,17 +43,22 @@
     AIV.nodeDefaultColor = '#cdcdcd';
     AIV.searchNodeColor = '#ffffff';
     AIV.locColorAssignments = {
-        cytoskeleton : "#572d21",
-        cytosol      : "#e0498a",
-        "endoplasmic reticulum" : "#d1111b",
-        extracellular: "#ffd672",
-        golgi        : "#a5a417",
-        mitochondrion: "#41abf9",
-        nucleus      : "#0032ff",
-        peroxisome   : "#650065",
-        "plasma membrane" : "#edaa27",
-        plastid      : "#13971e",
-        vacuole      : "#ecea3a",
+        Cytoskeleton : "#572d21",
+        Cytosol      : "#e0498a",
+        "Endoplasmic reticulum" : "#d1111b",
+        Extracellular: "#ffd672",
+        Golgiapparatus        : "#fffdbf",
+        Mitochondria: "#41abf9",
+        Nucleus      : "#0021a4",
+        Peroxisome   : "#650065",
+        "Plasma membrane" : "#ffae00",
+        Plastid      : "#006007",
+        Vacuole      : "#ffe901",
+        Cytoplasm      : "#CC8FE6",
+        Cellmembrane    : "#9bffe7",
+        Cellwall    : "#99ff00",
+        Chloroplast    : "#0066ff",
+
     };
     AIV.locCompoundNodes = [];
     AIV.coseParentNodesOnCyCore  = false;
@@ -922,9 +927,6 @@
         this.cy.on('mouseover', 'node[id^="Protein"]', function(event) {
             let protein = event.target;
             let agiName = protein.data("name");
-            // console.log(protein.data);
-            console.log(protein);
-            // console.log(agiName);
 
             let exprOverlayChkbox = document.getElementById('exprnOverlayChkbox');
             protein.qtip(
@@ -1034,7 +1036,7 @@
     AIV.displaySUBA4qTipData = function(protein) {
         let locData = protein.data('localizationData');
 
-        console.log(locData);
+
 
         if (!locData) {return "";} //exit if undefined
         let baseString = "";
@@ -1605,7 +1607,7 @@
             };
         this.parseProteinNodes(nodeID => reqJSON.genes.push( nodeID.concat('.1') ));
 
-        console.log(reqJSON);
+
 
         return reqJSON;
     };
@@ -1636,9 +1638,7 @@
             let localization = geneLocalizations[geneAGIName][0].split(",");
             if (localization.length){ //For nodes with any localization data
                 let majorityLoc = localization[0];
-                // console.log(majorityLoc);
-                // console.log(localization);
-                // console.log(calcLocPcts(localization));
+
 
                 AIV.cy.$('node[name = "' + nodeID + '"]')
                     .data({
@@ -1700,8 +1700,10 @@
         SVGstr += `<svg width="${SVGwidthheight}" height="${SVGwidthheight}" class="donut" xmlns="http://www.w3.org/2000/svg">`;
         SVGstr += `<circle class="donut-hole" cx="${donutCxCy}" cy="${donutCxCy}" r="${radius}" fill="transparent"></circle>`;
 
+
         //The below donut segment will appear for genes without SUBA data... it will be all grey
         SVGstr += `<circle class="donut-unfilled-ring" cx="${donutCxCy}" cy="${donutCxCy}" r="${radius}" fill="transparent" stroke="#56595b" stroke-width="${strokeWidth}" display="block"></circle>`;
+
 
         // Figure out which 'PCT' properties are greater than zero and then programatically add them
         // as donut-segments. Note that some calculations are involved based
@@ -1711,12 +1713,14 @@
 
         if (AGIGeneLocData.length > 0){ // need check as nodes without loc data with crash app
             AGIGeneLocData.forEach(function(locPercentage){
+                console.log(Object.keys(locPercentage)[0]);
                 pctAndColorArray.push({
                     pct : (Object.values(locPercentage)[0] * 100), //convert to % for easier parsing later
                     color : AIV.locColorAssignments[Object.keys(locPercentage)[0]]
                 });
             });
         }
+        console.log(pctAndColorArray);
 
         // Now have pre-sorted pctAndColorArray based on the value of the 'pct' property, order greatest to least
         // Result: Show pie chart values from greatest to least starting from 12 oclock
@@ -1751,7 +1755,7 @@
     AIV.returnBGImageSVGasCSS = function () {
         return (
             AIV.cy.style() //specifying style instead of stylesheet updates instead of replaces the cy CSS
-                .selector('node[id ^= "Protein_At"]')
+                .selector('node[id ^= "Protein"]')
                     .css({
                         'background-image' : 'data(svgDonut)',
                     })
@@ -2213,7 +2217,7 @@
      */
     AIV.returnGeneNameCSS = function(){
         return (this.cy.style()
-                    .selector('node[id ^= "Protein_At"]')
+                    .selector('node[id ^= "Protein"]')
                     .css({
                         'label' : 'data(annotatedName)',
                     })
