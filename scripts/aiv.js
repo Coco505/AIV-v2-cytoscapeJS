@@ -404,49 +404,65 @@
                     'font-size' : 18,
                     'font-family' : "Verdana, Geneva, sans-serif",
                 })
-            .selector('#cytoskeleton') //for compound nodes
+            .selector('#Cytoskeleton') //for compound nodes
                 .style({
                     'background-color': '#e8e5e5',
                 })
-            .selector('#cytosol') //for compound nodes
+            .selector('#Cytosol') //for compound nodes
                 .style({
                     'background-color': '#ffe7ff',
                 })
-            .selector('[id="endoplasmic reticulum"]') //for compound nodes
+            .selector('[id="Endoplasmic reticulum"]') //for compound nodes
                 .style({
                     'background-color': '#ff8690',
                 })
-            .selector('#extracellular') //for compound nodes
+            .selector('#Extracellular') //for compound nodes
                 .style({
-                    'background-color': '#ffffdb',
+                    'background-color': '#ffe6ab',
                 })
-            .selector('#golgi') //for compound nodes
+            .selector('#Golgiapparatus') //for compound nodes
                 .style({
-                    'background-color': '#ffff8f',
+                    'background-color': '#fff8e9',
                 })
-            .selector('#mitochondrion') //for compound nodes
+            .selector('#Mitochondria') //for compound nodes
                 .style({
-                    'background-color': '#dfffff',
+                    'background-color': '#6cc0ff',
                 })
-            .selector('#nucleus') //for compound nodes
+            .selector('#Nucleus') //for compound nodes
                 .style({
-                    'background-color': '#4f81ff',
+                    'background-color': '#5666ab',
                 })
-            .selector('#peroxisome') //for compound nodes
+            .selector('#Peroxisome') //for compound nodes
                 .style({
                     'background-color': '#ce69ce',
                 })
-            .selector('[id="plasma membrane"]') //for compound nodes
+            .selector('[id="Plasma membrane"]') //for compound nodes
                 .style({
-                    'background-color': '#ffd350',
+                    'background-color': '#f8bf46',
                 })
-            .selector('#plastid') //for compound nodes
+            .selector('#Plastid') //for compound nodes
                 .style({
-                    'background-color': '#8bff96',
+                    'background-color': '#2e5932',
                 })
-            .selector('#vacuole') //for compound nodes
+            .selector('#Vacuole') //for compound nodes
                 .style({
-                    'background-color': '#ffff70',
+                    'background-color': '#fff055',
+                })
+            .selector('#Cytoplasm') //for compound nodes
+                .style({
+                    'background-color': '#ddc0ea',
+                })
+            .selector('#Cellmembrane') //for compound nodes
+                .style({
+                    'background-color': '#c4ffee',
+                })
+            .selector('#Cellwall') //for compound nodes
+                .style({
+                    'background-color': '#cdf88f',
+                })
+            .selector('#Chloroplast') //for compound nodes
+                .style({
+                    'background-color': '#5e9fff',
                 })
             .selector('#unknown') //for compound nodes
                 .style({
@@ -615,7 +631,7 @@
 
     /**
      * @function addCompoundNode - generic function to add compound nodes to the cy core
-     * @param idOfParent - id of compound node, 'id', example "nucleus"
+     * @param idOfParent - id of compound node, 'id', example "Nucleus"
      */
     AIV.addCompoundNode = function(idOfParent){
         AIV.cy.add({
@@ -1679,7 +1695,7 @@
     /**
      * @namespace {object} AIV
      * @function createSVGPIeDonutCartStr -
-     * This function will take in all the location data properties that a node has (for example, 'nucleus')
+     * This function will take in all the location data properties that a node has (for example, 'Nucleus')
      * to be used to create a SVG donut string which will be set as the background image. I intentionally
      * made this function based on the AIV.nodeSize property such that it can be more scalable (literally
      * and figuratively).
@@ -1713,14 +1729,12 @@
 
         if (AGIGeneLocData.length > 0){ // need check as nodes without loc data with crash app
             AGIGeneLocData.forEach(function(locPercentage){
-                console.log(Object.keys(locPercentage)[0]);
                 pctAndColorArray.push({
                     pct : (Object.values(locPercentage)[0] * 100), //convert to % for easier parsing later
                     color : AIV.locColorAssignments[Object.keys(locPercentage)[0]]
                 });
             });
         }
-        console.log(pctAndColorArray);
 
         // Now have pre-sorted pctAndColorArray based on the value of the 'pct' property, order greatest to least
         // Result: Show pie chart values from greatest to least starting from 12 oclock
@@ -1789,7 +1803,7 @@
         }, true);
 
         this.cy.filter("node[id ^= 'Effector']").forEach(function(effector){
-            $(`.${effector.data('name')}-ppi-loc`).text("extracellular(assumed)");
+            $(`.${effector.data('name')}-ppi-loc`).text("Extracellular(assumed)");
         });
     };
 
@@ -1955,7 +1969,7 @@
 
     /**
      * @namespace {object} AIV
-     * @function effectorsLocHouseCleaning - purpose of this function is to fill in the localization data for effectors as they do not undergo the same parsing as protein nodes. Specifically they belong to the extracellular matrix (ECM), so if one exists on the app, modify the compound state variable correctly if not added already
+     * @function effectorsLocHouseCleaning - purpose of this function is to fill in the localization data for effectors as they do not undergo the same parsing as protein nodes. Specifically they belong to the Extracellular matrix (ECM), so if one exists on the app, modify the compound state variable correctly if not added already
      */
     AIV.effectorsLocHouseCleaning = function(){
         let effectorSelector = this.cy.filter("node[id ^= 'Effector']");
@@ -2050,7 +2064,7 @@
                 document.getElementById('loading').classList.add('loaded'); //hide loading spinner
                 $('#loading').children().remove(); //delete the loading spinner divs
 
-                console.log(JSON.stringify( AIV.returnLocalizationPOSTJSON()))
+
             })
             .catch(function(err){
                 alertify.logPosition("top right");

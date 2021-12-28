@@ -118,14 +118,6 @@
 
                         <button class="button-layout" id="coseCompoundLayout"></button>
                     </div>
-                    <div>
-                        <div class="col-lg-6" id="mmDropdown">
-                            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span> MapMan Legend/Filter</span> <span class="caret"></span></button>
-                            <ul id="bootstrapDropDownMM" class="dropdown-menu">
-
-                            </ul>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="flex-container-zoom-pan-buttons">
@@ -167,24 +159,18 @@
                     <div id="filterNonQueryEyeDiv">
                         <i id="filterNonQueryEye" class="far fa-eye"></i> Non-Query Genes
                     </div>
-                    <div id="hideMapManDiv" class="label-checkbox">
-                        <i id="hideMapManEye" class="far fa-eye"></i> MapMan Numbers
-                    </div>
                     <div id="hideDonutDiv" class="label-checkbox">
                         <i id="hideDonutEye" class="far fa-eye"></i> Localization Data
                     </div>
                     <div id="exprPredLocDiv" class="label-checkbox">
                         <i id="exprPredLocEye" class="far fa-eye"></i> Pred Localizations
                     </div>
-                    <div id="hideDNADiv" class="label-checkbox">
-                        <i id="hideDNAEye" class="far fa-eye"></i> DNA (Chr) Nodes
-                    </div>
                 </div>
 
                 <div class="filter-column filter-grid">
                     <div class="finder">
-                        <label for="highlightNodesAGIs">Find AGIs</label>
-                        <input id="highlightNodesAGIs" type="text" placeholder=' Highlight delimited AGIs by "," eg "At3g10010, At5g10220"'>
+                        <label for="highlightNodesRGIs">Find RGIs</label>
+                        <input id="highlightNodesRGIs" type="text" placeholder=' Highlight delimited RGIs by "," eg "LOC_Os02g52140, LOC_Os03g54160"'>
                         <label for="highlightNodes" id="highlightNodes">
                             <i class="fas fa-filter"></i>
                         </label>
@@ -227,12 +213,6 @@
                                 Correlation Coefficient greater than
                             </label>
                             <input id="PPPICorrThreshold" class="threshold" type="number" min="-1.0" max="1.0" step="0.1" value ="-1.0" maxlength="2" disabled/>
-                        </div>
-                        <div>
-                            <label for="PPPIConfThreshold">
-                                Interolog Confidence greater than &nbsp
-                            </label>
-                            <input id="PPPIConfThreshold" class="threshold" type="number" min="0" max="90.0" step="1.0" value ="0.0" maxlength="2" disabled/>
                         </div>
                     </div>
                 </div>
@@ -364,10 +344,6 @@
 
                                 <div class="checkbox">
                                     <label class="" ><input id="recursive" type="checkbox" class="form-chkbox" value="">Search for interactions between interactors</label>
-                                </div>
-
-                                <div class="checkbox">
-                                    <label><input id="queryDna" class="form-chkbox" type="checkbox" value="" checked>Query protein-DNA interactions from BAR</label>
                                 </div>
 
                             </div>

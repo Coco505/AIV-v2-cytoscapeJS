@@ -11,21 +11,25 @@
 // Map with the color of each layer ({layer1:color1, layer2:color2}) NOTE: changed here
 var colors = {
     "unknown": "#000",
-    "extracellular": "#ffd672",
-    "plasma membrane": "#edaa27",
-    "cytoskeleton": "#575454",
-    "cytosol": "#e0498a",
-    "mitochondrion": "#41abf9",
-    "peroxisome": "#650065",
-    "plastid": "#13971e",
-    "vacuole": "#ecea3a",
-    "golgi": "#a5a417",
-    "endoplasmic reticulum": "#d1111b",
-    "nucleus": "#0032ff"
+    "Extracellular": "#ffd672",
+    "Plasma membrane": "#ffae00",
+    "Cytoskeleton": "#572d21",
+    "Cytosol": "#e0498a",
+    "Mitochondria": "#41abf9",
+    "Peroxisome": "#650065",
+    "Plastid": "#006007",
+    "Vacuole": "#ffe901",
+    "Golgiapparatus": "#e8e88c",
+    "Endoplasmic reticulum": "#d1111b",
+    "Nucleus": "#0021a4",
+    "Cytoplasm": "#CC8FE6",
+    "Cellmembrane": "#9bffe7",
+    "Cellwall": "#99ff00",
+    "Chloroplast": "#0066ff"
 };
 
 // Ordered list of layers from top to bottom NOTE: changed here
-var layers = ['unknown', 'extracellular', 'plasma membrane', 'cytoskeleton', 'cytosol', 'mitochondrion', 'peroxisome', 'plastid', 'vacuole', 'golgi', 'endoplasmic reticulum', 'nucleus'];
+var layers = ['unknown', 'Extracellular', 'Plasma membrane', 'Cytoskeleton', 'Cytosol', 'Mitochondria', 'Peroxisome', 'Plastid', 'Vacuole', 'Golgiapparatus', 'Endoplasmic reticulum', 'Cytoplasm', 'Cellmembrane', 'Cellwall', 'Chloroplast', 'Nucleus'];
 
 // Name of the attribute that contains the information of the node layer
 var layer_attribute_name = "localization";

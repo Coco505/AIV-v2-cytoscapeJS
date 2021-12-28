@@ -106,6 +106,7 @@ window.cerebralNamespace.options = { // NOTE: changed from global variable to na
             // }
             var auxColors = ['#058DC7', '#50B432', '#ED561B', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#FFF263', '#6AF9C4'];
             var n = cy.nodes();
+            console.log(options.layers);
             for (let i = 0; i < n.length; i++) {
                 if (extractLayers && options.layers.indexOf(n[i].data(options.layer_attribute_name)) === -1) {
                     options.layers.push(n[i].data(options.layer_attribute_name));
@@ -148,12 +149,12 @@ window.cerebralNamespace.options = { // NOTE: changed from global variable to na
                     height = Math.ceil((container.clientHeight - (numLines * room)) / (totalNodes / nodesAuxInLayer.length));
                     var line = heightAcum + height + (room / 2);
 
-                    if (k !== 11) { // if k is 11, do not draw the line, as this is the nucleus, we want to include this line with the DNA chromosomes at the bottom
-                        ctx.beginPath();
-                        ctx.moveTo(0, line);
-                        ctx.lineTo(canvas.width, line);
-                        ctx.stroke();
-                    }
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, line);
+                    ctx.lineTo(canvas.width, line);
+                    ctx.stroke();
+
                     ctx.fillStyle = options.colors[options.layers[k]];
 
                     var y = heightAcum + Math.ceil((height) / 2);
@@ -169,7 +170,7 @@ window.cerebralNamespace.options = { // NOTE: changed from global variable to na
                                 return false;
                             }
 
-                            if (k === 11) { //i.e. nucleus
+                            if (k === 11) { //i.e. Nucleus
                                 return {
                                     x: Math.round((Math.random() * width) + 5),
                                     y: Math.round((Math.random() * height) + heightAcum - 25) //do not overlay over DNA nodes

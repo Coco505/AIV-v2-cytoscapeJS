@@ -72,9 +72,7 @@
         panUp(AIVref);
         panDown(AIVref);
         highlightNodes(AIVref);
-        // hideUnhideMapMan(AIVref);
         hideUnhideDonuts(AIVref);
-        hideUnhideDNA(AIVref);
         qTipsUI();
     }
 
@@ -90,7 +88,6 @@
             // $('#genes').val("LOC_Os02g54120\nLOC_Os02g52140\nLOC_Os03g54160");
             resetForm();
             document.getElementById('queryBAR').click();
-            document.getElementById('queryDna').click();
         });
     }
 
@@ -744,20 +741,15 @@
         let barPPICheckbox = document.getElementById('queryBAR');
         barPPICheckbox.addEventListener('change', function(){
             var recursiveCheckbox = document.getElementById("recursive");
-            var dnaCheckbox = document.getElementById("queryDna");
             if (barPPICheckbox.checked) {
                 recursiveCheckbox.disabled = false;
                 recursiveCheckbox.parentNode.classList.remove('not-allowed');
-                dnaCheckbox.disabled = false;
-                dnaCheckbox.parentNode.classList.remove('not-allowed');
+
             }
             else {
                 recursiveCheckbox.parentNode.classList.add('not-allowed');
                 recursiveCheckbox.disabled = true;
                 recursiveCheckbox.checked = false;
-                dnaCheckbox.parentNode.classList.add('not-allowed');
-                dnaCheckbox.disabled = true;
-                dnaCheckbox.checked = false;
             }
         });
     }
@@ -1046,13 +1038,12 @@
     }
 
     /**
-     * @function pearsonAndInterologFilterPPPIonEles - Similar logic to pearsonFilterEPPIonEles function but with additonal logic for the interlog confidence threshold (uses an OR cytoscapejs selector)
+     * @function pearsonFilterPPPIonEles - Similar logic to pearsonFilterEPPIonEles function but with additonal logic for the interlog confidence threshold (uses an OR cytoscapejs selector)
      * @param {object} AIVObjReference - reference to the AIV namespace object
      */
-    function pearsonAndInterologFilterPPPIonEles(AIVObjReference){
+    function pearsonFilterPPPIonEles(AIVObjReference){
         let filterRValue = Number(document.getElementById('PPPICorrThreshold').value);
-        let filterInterlogConf = Number(document.getElementById('PPPIConfThreshold').value);
-        let selector = `edge[pearsonR <= ${filterRValue}][!published][target ^= 'Protein'], edge[interologConfidence >= 1][interologConfidence <= ${filterInterlogConf}][!published][target ^= 'Protein']`;
+        let selector = `edge[pearsonR <= ${filterRValue}][!published][target ^= 'Protein']`;
         let edges = AIVObjReference.cy.$(selector); // OR selector
         edges.connectedNodes('node[!queryGene][id ^="Protein"]').forEach(function(ele){
             // console.log(ele.data(), "data, degree", ele.degree());
@@ -1074,30 +1065,28 @@
             // below logic is for cleaner UI to disable filters when switch is off
             if (event.target.checked){
                 document.getElementById('PPPICorrThreshold').removeAttribute("disabled");
-                document.getElementById('PPPIConfThreshold').removeAttribute("disabled");
-                pearsonAndInterologFilterPPPIonEles(AIVObj);
+                pearsonFilterPPPIonEles(AIVObj);
             }
             else {
                 document.getElementById('PPPICorrThreshold').setAttribute("disabled", "");
-                document.getElementById('PPPIConfThreshold').setAttribute("disabled", "");
+
             }
         });
     }
 
-    // /**
-    //  * @function hideUnhideMapMan - add event listeners to the PPPI thersholds (confidence and correlation coefficients)
-    //  * @param {object} AIVObj - reference to the AIV namespace object
-    //  */
-    // function filterPredictedPPIsInputsEListener(AIVObj){
-    //     function eListener (event){
-    //         if ( document.getElementById('filterPPPIsCheckbox').checked ){
-    //             AIVObj.cy.$('.pearsonAndInterologfilterPPPI').removeClass('pearsonAndInterologfilterPPPI');
-    //             pearsonAndInterologFilterPPPIonEles(AIVObj);
-    //         }
-    //     }
-    //     document.getElementById('PPPICorrThreshold').addEventListener('change', eListener);
-    //     document.getElementById('PPPIConfThreshold').addEventListener('change', eListener);
-    // }
+    /**
+     * @function hideUnhideMapMan - add event listeners to the PPPI thersholds (confidence and correlation coefficients)
+     * @param {object} AIVObj - reference to the AIV namespace object
+     */
+    function filterPredictedPPIsInputsEListener(AIVObj){
+        function eListener (event){
+            if ( document.getElementById('filterPPPIsCheckbox').checked ){
+                AIVObj.cy.$('.pearsonAndInterologfilterPPPI').removeClass('pearsonAndInterologfilterPPPI');
+                pearsonFilterPPPIonEles(AIVObj);
+            }
+        }
+        document.getElementById('PPPICorrThreshold').addEventListener('change', eListener);
+    }
 
     /**
      * @function restrictUIInputsNumRange - restrict the threshold values
@@ -1110,23 +1099,9 @@
         }
         document.getElementById('PPPICorrThreshold').addEventListener('input', restrictRRange);
         document.getElementById('EPPICorrThreshold').addEventListener('input', restrictRRange);
-        document.getElementById('PPPIConfThreshold').addEventListener('input', function(event){
-            let value = Number(event.target.value);
-            if ( value < -0){ event.target.value = 0;}
-            else if (value > 90) {event.target.value = 90;}
-        });
+
     }
 
-    // /**
-    //  * @function hideUnhideMapMan - event listener binding function for hiding mapman donut centres
-    //  * @param {object} AIVObj - reference to the AIV namespace object
-    //  */
-    // function hideUnhideMapMan(AIVObj) {
-    //     document.getElementById('hideMapManDiv').addEventListener('click', function(event){
-    //         AIVObj.hideMapMan($("#hideMapManEye").hasClass('fa-eye'));
-    //         $("#hideMapManEye").toggleClass('fa-eye fa-eye-slash');
-    //     });
-    // }
 
     /**
      * @function hideUnhideDonuts - event listener binding function for hiding pie chart donuts
@@ -1139,16 +1114,6 @@
         });
     }
 
-    /**
-     * @function hideUnhideDNA - event listener binding function for hiding DNA nodes
-     * @param {object} AIVObj - reference to the AIV namespace object
-     */
-    function hideUnhideDNA(AIVObj) {
-        document.getElementById('hideDNADiv').addEventListener('click', function(event){
-            AIVObj.cy.$('node[id ^= "DNA"]').toggleClass('DNAfilter', $("#hideDNAEye").hasClass('fa-eye'));
-            $("#hideDNAEye").toggleClass('fa-eye fa-eye-slash');
-        });
-    }
 
     /**
      * @function changeLayoutCyHouseCleaning - Helper function that will be run before a new layout is executed
@@ -1166,6 +1131,7 @@
     }
 
     /**
+     * @function spreadLayoutEventListener - change to cerebral/layered layout
      * @function spreadLayoutEventListener - change to cerebral/layered layout
      * @param {object} AIVObj - reference to global namespace AIV object, with access to cytoscape methods
      */
@@ -1286,42 +1252,17 @@
      */
     function highlightNodes(AIVObj){
         document.getElementById('highlightNodes').addEventListener('click', function(event) {
-            let genes = AIVObj.formatAGI($.trim(document.getElementById('highlightNodesAGIs').value.split(" ").join(""))); // format to exclude whitespaces between and outside of string
+            let genes = AIVObj.formatAGI($.trim(document.getElementById('highlightNodesRGIs').value.split(" ").join(""))); // format to exclude whitespaces between and outside of string
             genes = "#Protein_" + genes.split(',').join(',#Protein_');
             console.log(genes);
             AIVObj.cy.$(genes).addClass('highlighted');
         });
         document.getElementById('cancelHighlight').addEventListener('click', function(event) {
             AIVObj.cy.$('.highlighted').removeClass('highlighted');
-            document.getElementById('highlightNodesAGIs').value = "";
+            document.getElementById('highlightNodesRGIs').value = "";
         });
     }
 
-    // /**
-    //  * @function mapManDropDown -
-    //  * @param {object} AIVObj - reference to global namespace AIV object, with access to cytoscape methods
-    //  */
-    // function mapManDropDown(AIVObj){
-    //     $('#mmDropdown').on({ //hack to prohibit the dropdown from closing when you click outside, credits to https://stackoverflow.com/questions/19740121/keep-bootstrap-dropdown-open-when-clicked-off/19797577#19797577
-    //         "shown.bs.dropdown": function() { this.closable = false; },
-    //         "click":             function() { this.closable = true; },
-    //         "hide.bs.dropdown":  function() { return this.closable; }
-    //     });
-    //
-    //     $('#bootstrapDropDownMM a').on( 'click', function( event ) {
-    //         let inputChild = $(event.target).children("input");
-    //         inputChild.prop('checked', !inputChild.is(':checked'));
-    //         hideMapManNodes($(event.target).data("value"));
-    //         return false;
-    //     });
-    //
-    //     function hideMapManNodes(mapManNum){
-    //         console.log(mapManNum);
-    //         AIVObj.cy.startBatch();
-    //         AIVObj.cy.$(`node[mapManOverlay = '${mapManNum}'][id ^= "Protein"]`).toggleClass('hideMapManNodes');
-    //         AIVObj.cy.endBatch();
-    //     };
-    // }
 
     /**
      * @function qTipsUI - bind qTips to HTML elements which have the title attribute
