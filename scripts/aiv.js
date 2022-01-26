@@ -46,7 +46,7 @@
         Cytoskeleton : "#572d21",
         Cytosol      : "#e0498a",
         "Endoplasmic reticulum" : "#d1111b",
-        Extracellular: "#ffd672",
+        Extracell: "#ffd672",
         Golgiapparatus        : "#fffdbf",
         Mitochondria: "#41abf9",
         Nucleus      : "#0021a4",
@@ -57,7 +57,7 @@
         Cytoplasm      : "#CC8FE6",
         Cellmembrane    : "#9bffe7",
         Cellwall    : "#99ff00",
-        Chloroplast    : "#0066ff",
+        Chloroplast    : "#0066ff"
 
     };
     AIV.locCompoundNodes = [];
@@ -416,7 +416,7 @@
                 .style({
                     'background-color': '#ff8690',
                 })
-            .selector('#Extracellular') //for compound nodes
+            .selector('#Extracell') //for compound nodes
                 .style({
                     'background-color': '#ffe6ab',
                 })
@@ -515,24 +515,24 @@
                     'control-point-weights'   : '0.65',
                     'target-arrow-color' : '#333435',
                 })
-            .selector('edge[target *= "DNA"][interologConfidence = 0]') //i.e. published PDI
+            .selector('edge[target *= "DNA"][num_species = 0]') //i.e. published PDI
                 .style({
                     'line-color' : '#557e00',
                     'target-arrow-color' : '#557e00',
                 })
-            .selector('edge[interologConfidence <= 2][interologConfidence > 0], edge[interologConfidence > -7203][interologConfidence <= -9605]')
+            .selector('edge[num_species <= 2][num_species > 0], edge[num_species > -7203][num_species <= -9605]')
                 .style({
                     'width' : '1'
                 })
-            .selector('edge[interologConfidence > 2], edge[interologConfidence > -4802][interologConfidence <= -7203]')
+            .selector('edge[num_species > 2], edge[num_species > -4802][num_species <= -7203]')
                 .style({
                     'width' : '3'
                 })
-            .selector('edge[interologConfidence > 5], edge[interologConfidence > -2401][interologConfidence <= -4802]')
+            .selector('edge[num_species > 5], edge[num_species > -2401][num_species <= -4802]')
                 .style({
                     'width' : '5'
                 })
-            .selector('edge[interologConfidence > 10], edge[interologConfidence >= -1][interologConfidence <= -2401]')
+            .selector('edge[num_species > 10], edge[num_species >= -1][num_species <= -2401]')
                 .style({
                     'width' : '7'
                 })
@@ -561,18 +561,18 @@
 
     /**
      * @namespace {object} AIV
-     * @function getWidth - Get PPI edge width based on interolog confidence
+     * @function getWidth - Get PPI edge width based on number of species
      * @description - not currently used, see stylesheet
-     * @param {number} interolog_confidence - expects a interolog confidence value from the GET request
+     * @param {number} num_species - expects a number of species value from the GET request
      */
-    AIV.getWidth = function(interolog_confidence) {
-        if (interolog_confidence > 10 || (interolog_confidence >= -1 && interolog_confidence <= -2401)){
+    AIV.getWidth = function(num_species) {
+        if (num_species > 10 || (num_species >= -1 && num_species <= -2401)){
             return '7';
-        } else if (interolog_confidence > 5 || (interolog_confidence > -2401 && interolog_confidence <= -4802)) {
+        } else if (num_species > 5 || (num_species > -2401 && num_species <= -4802)) {
             return '5';
-        } else if (interolog_confidence > 2 || (interolog_confidence > -4802 && interolog_confidence <= -7203)) {
+        } else if (num_species > 2 || (num_species > -4802 && num_species <= -7203)) {
             return '3';
-        } else if (interolog_confidence <= 2 && interolog_confidence > 0 || (interolog_confidence > -7203 && interolog_confidence <= -9605)) {
+        } else if (num_species <= 2 && num_species > 0 || (num_species > -7203 && num_species <= -9605)) {
             return '1';
         } else { //i.e. interlog confidence of '0',
             return '11';
@@ -590,15 +590,7 @@
      * @returns {string} - hexcode for color
      */
     AIV.getEdgeColor = function(correlation_coefficient, published, index, interolog_confidence) {
-        correlation_coefficient = Math.abs(parseFloat(correlation_coefficient)); // Make the value positive
-        if (index === '2') { //PDIs
-            if (interolog_confidence === 0){
-                return '#557e00'; // if e PDI, return dark green
-            }
-            else {
-                return '#333435'; // if p PDI, return greyish
-            }
-        } else if (published) { //published PPIs but not published PDIs
+        if (published) { //published PPIs but not published PDIs
             return '#99cc00';
         } else if (correlation_coefficient > 0.8) {
             return '#ac070e';
@@ -1054,7 +1046,7 @@
 
 
 
-        if (!locData) {return "";} //exit if undefined
+        if (!locData) {return "Localization data unavailable";} //exit if undefined
         let baseString = "";
         for (let i = 0; i < locData.length ;i++){
             let locPercent = Object.values(locData[i])[0];
@@ -1727,8 +1719,8 @@
         var scaling = radius/15.91549430918952;
         var pctAndColorArray = [];
 
-        if (AGIGeneLocData.length > 0){ // need check as nodes without loc data with crash app
-            AGIGeneLocData.forEach(function(locPercentage){
+        if (AGIGeneLocData != null && AGIGeneLocData.length > 0){ // need check as nodes without loc data with crash app
+            AGIGeneLocData.forEach(function(locPercentage) {
                 pctAndColorArray.push({
                     pct : (Object.values(locPercentage)[0] * 100), //convert to % for easier parsing later
                     color : AIV.locColorAssignments[Object.keys(locPercentage)[0]]
@@ -1789,12 +1781,16 @@
         this.parseProteinNodes(function(node){
             let ulString = "<ul>";
             let locData = node.data('localizationData');
-            for (let i = 0; i < locData.length; i++) {
+            try{for (let i = 0; i < locData.length; i++) {
                 let locPercent = Object.values(locData[i])[0];
                 if (locPercent > 0){
                     ulString += `<li> ${Object.keys(locData[i])[0]}: ${(locPercent*100).toFixed(1)}% </li>`;
                 }
+            }} catch(error){
+                alertify.logPosition("top right");
+                alertify.error(`Localization data unavailable for protein ${node.data('name')}`);
             }
+
             ulString += "</ul>";
             // console.log(ulString);
             let nodeID = node.data('name');
@@ -1989,13 +1985,13 @@
      * @returns {boolean} - True if the data is loaded
      */
     AIV.loadData = function() {
-        //
-        // // Dynamically build an array of promises for the Promise.all call later
-        // var promisesArr = [];
-        //
-        // if ($('#queryBAR').is(':checked')) {
-        //     promisesArr.push(this.createBARAjaxPromise());
-        // }
+
+        // Dynamically build an array of promises for the Promise.all call later
+        var promisesArr = [];
+
+        if ($('#queryBAR').is(':checked')) {
+            promisesArr.push(this.createBARAjaxPromise());
+        }
         // // if ($('#queryIntAct').is(':checked')) {
         // //     promisesArr = promisesArr.concat(this.createINTACTAjaxPromise());
         // // }
@@ -2004,12 +2000,10 @@
         // // }
         //
 
-        let serviceURL = 'https://bar.utoronto.ca/api_dev/interactions/rice/'+this.genesList.toString();
 
-        fetch(serviceURL)
-            .then(res=>res.json())
-            .then(data => {
-
+        Promise.all(promisesArr)
+            .then(function(promiseRes) {
+                // console.log("Response:", promiseRes);
                 // Add Query node (user inputed in HTML form)
                 for (let i = 0; i < AIV.genesList.length; i++) {
                     if (AIV.genesList[i].match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) {
@@ -2020,16 +2014,15 @@
                     }
                 }
 
-                AIV.parseBARInteractionsData(data);
-                // // Parse data and make cy elements object
-                // for (let i = 0; i < promiseRes.length; i++) {
-                //     if (promiseRes[i].ajaxCallType === "BAR"){
-                //         AIV.parseBARInteractionsData(promiseRes[i].res);
-                //     }
-                //     else {
-                //         AIV.parsePSICQUICInteractionsData(promiseRes[i].res, promiseRes[i].queryGene, promiseRes[i].ajaxCallType);
-                //     }
-                // }
+                // Parse data and make cy elements object
+                for (let i = 0; i < promiseRes.length; i++) {
+                    if (promiseRes[i].ajaxCallType === "BAR"){
+                        AIV.parseBARInteractionsData(promiseRes[i].res);
+                    }
+                    else {
+                        AIV.parsePSICQUICInteractionsData(promiseRes[i].res, promiseRes[i].queryGene, promiseRes[i].ajaxCallType);
+                    }
+                }
 
                 // Update styling and add qTips as nodes have now been added to the cy core
 
@@ -2112,13 +2105,16 @@
      * @returns {Promise.<{res: object, ajaxCallType: string}>|*}
      */
     AIV.createBARAjaxPromise = function() {
-        // //AGI IDs
-        // let postObj = {};
-        // postObj.loci = "";
-        // for (var i = 0; i < this.genesList.length; i++) {
-        //     postObj.loci += this.genesList[i] + ",";
-        // }
-        // postObj.loci = postObj.loci.slice(0, -1);
+        //AGI IDs
+        var postObj =
+            {
+                species: 'rice',
+                genes : [],
+            };
+        for (var i = 0; i < this.genesList.length; i++) {
+            postObj.genes.push(this.genesList[i]);
+        }
+        // postObj.genes = postObj.genes.slice(0, -1);
 
 
         // //Recursive
@@ -2131,14 +2127,16 @@
         // postObj.querydna = $('#queryDna').is(':checked');
 
         // let serviceURL = '//bar.utoronto.ca/interactions2/cgi-bin/get_interactions_dapseq.php';////
-        let serviceURL = 'https://bar.utoronto.ca/api_dev/interactions/rice/';
+        let serviceURL = 'https://bar.utoronto.ca/api_dev/interactions/';
+
+        console.log(JSON.stringify(postObj))
 
         return $.ajax({
-            url: serviceURL.concat(this.genesList.toString()),
-            type: 'GET',
-            // data: this.genesList.toString(),
+            url: serviceURL,
+            type: 'POST',
+            data: JSON.stringify(postObj),
             contentType: "application/json",
-            dataType: "string"
+            dataType: "json"
         })
             .then( res => ( {res: res, ajaxCallType: 'BAR'} )); //ajaxCallType for identifying when parsing Promise.all response array
     };

@@ -84,8 +84,8 @@
     /** @function addExampleEListener - example form*/
     function addExampleEListener() {
         $('#example').click(function() {
-            $('#genes').val("LOC_Os02g54120");
-            // $('#genes').val("LOC_Os02g54120\nLOC_Os02g52140\nLOC_Os03g54160");
+            // $('#genes').val("LOC_Os01g01700");
+            $('#genes').val("LOC_Os02g54120\nLOC_Os02g52140\nLOC_Os01g01700");
             resetForm();
             document.getElementById('queryBAR').click();
         });
