@@ -171,11 +171,10 @@
             let genes = $.trim($('#genes').val());
             genes = AIV.formatAGI(genes); //Format to keep "LOC_Os02g10000" format when identifying unique nodes, i.e. don't mixup between LOC_OS02G10000 and LOC_Os02g10000 and add a node twice
             let geneArr = genes.split('\n');
-            let effectorArr = [...document.getElementById('effectorSelect').options].map(option => option.value);
 
             for (let i = 0; i < geneArr.length; i++) { // gene form input verification
-                if(!geneArr[i].match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i) && effectorArr.indexOf(geneArr[i]) === -1){
-                    document.getElementById('errorModalBodyMsg').innerText = "Please check form value before adding effectors/submission! Genes should be delimited by newlines and follow the RGI format.";
+                if(!geneArr[i].match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)){
+                    document.getElementById('errorModalBodyMsg').innerText = "Please check form value before adding submission! Genes should be delimited by newlines and follow the RGI format.";
                     $('#formErrorModal').modal('show');
                     throw new Error('wrong submission');
                 }
@@ -230,7 +229,6 @@
         // clear memoized memory
         AIV.memoizedSanRefIDs.cache = new _.memoize.Cache;
         AIV.memoizedRetRefLink.cache = new _.memoize.Cache;
-        AIV.memoizedPDITable.cache = new _.memoize.Cache;
     };
 
     /**
@@ -953,7 +951,7 @@
                                             // HTML += AIV.showSynonyms(protein);
                                             // HTML += `<p>${AIV.showMapMan(protein)}</p>`;
                                             HTML += `<p>${AIV.displaySUBA4qTipData(protein)}</p>`;
-                                            if (AIV.exprLoadState.absolute && exprOverlayChkbox.checked){
+                                            if (AIV.exprLoadState.absolute && exprOverlayChkbox.checked){;
                                                 HTML += `<p>Mean Expr: ${protein.data('absExpMn')}</p>
                                                          <p>SD Expr:   ${protein.data('absExpSd')}</p>`;
                                             }
@@ -1529,74 +1527,34 @@
         let htmlString = "";
 
         // process PPI edges first
-        this.cy.edges('[target *= "Protein"], [target *= "Effector"]').forEach(function(ppiEdge){
+        this.cy.edges('[target *= "Protein"]').forEach(function(ppiEdge){
             let tempData = ppiEdge.data();
 
             let cleanRefs = "";
-            let sourceGene = tempData.source.split('_')[1];
-            let [typeTarget, targetGene] = tempData.target.split('_');
+            let sourceGene = tempData.source.split(/_(.+)/)[1];
+            let [typeTarget, targetGene] = tempData.target.split(/_(.+)/);
             if (tempData.reference){ //non-falsy value
                 AIV.memoizedSanRefIDs(tempData.reference).forEach(function(ref){
                     cleanRefs += `<p> ${AIV.memoizedRetRefLink(ref, targetGene, sourceGene)} </p>`;
                 });
+            }else{
+                cleanRefs = `<p><a href="https://dx.doi.org/10.1186/1939-8433-5-15" target="_blank"> BAR - DOI ${10.1186/1939-8433-5-15} </a> </p>`;
             }
 
             htmlString +=
                 `<tr>
                     <td class="small-csv-column">Protein-${typeTarget}</td>
-                    <td class="small-csv-column">${sourceGene}</td>
-                    <td class="small-csv-column">${targetGene}</td>
+                    <td class="med-csv-column">${sourceGene}</td>
+                    <td class="med-csv-column">${targetGene}</td>
                     <td class="${sourceGene}-annotate small-csv-column"></td>
                     <td class="${targetGene}-annotate small-csv-column"></td>
-                    <td class="small-csv-column">${tempData.interologConfidence === 0 ? "N/A" : tempData.interologConfidence }</td>
+                    <td class="small-csv-column">${tempData.num_species === 0 ? "N/A" : tempData.num_species }</td>
                     <td class="small-csv-column">${tempData.pearsonR}</td>
                     <td class="lg-csv-column">${cleanRefs.match(/.*undefined.*/) ? "None" : cleanRefs}</td>
-                    <td class="med-csv-column">${tempData.miAnnotated}</td>
                     <td class="${sourceGene}-loc lg-csv-column">Fetching Data</td>
                     <td class="${targetGene}-ppi-loc lg-csv-column">Fetching Data</td>
                 </tr>`;
         });
-
-        // now process PDI edges (or rather the state data in memory)
-        for (let chr of Object.keys(AIV.chromosomesAdded)) {
-            for (let i = 0; i < AIV.chromosomesAdded[chr].length; i++) {
-                let tempDNAData = AIV.chromosomesAdded[chr][i];
-
-                let cleanRefs = "";
-                let sourceGene = tempDNAData.source;
-                let targetGene = tempDNAData.target;
-                if (tempDNAData.reference){ //non-falsy value
-                    AIV.memoizedSanRefIDs(tempDNAData.reference).forEach(function(ref){
-                        cleanRefs += `<p> ${AIV.memoizedRetRefLink(ref, targetGene, sourceGene)} </p>`;
-                    });
-                }
-
-                let miHTML = "";
-                if (tempDNAData.mi !== null && tempDNAData.mi !== undefined){
-                    let miArray = tempDNAData.mi.split('|');
-                    miArray.forEach(function(miTerm){
-                        if (AIV.miTerms[miTerm] !== undefined){
-                            miHTML += `<p>${miTerm} (${AIV.miTerms[miTerm]})</p>`;
-                        }
-                    });
-                }
-
-                htmlString +=
-                `<tr>
-                    <td class="small-csv-column">Protein-DNA</td>
-                    <td class="small-csv-column">${sourceGene}</td>
-                    <td class="small-csv-column">${targetGene}</td>
-                    <td class="${sourceGene}-annotate small-csv-column"></td>
-                    <td class="${targetGene}-annotate small-csv-column"></td>
-                    <td class="small-csv-column">${tempDNAData.interolog_confidence === 0 ? "N/A" : tempDNAData.interolog_confidence }</td>
-                    <td class="small-csv-column">${tempDNAData.correlation_coefficient}</td>
-                    <td class="lg-csv-column">${cleanRefs}</td>
-                    <td class="med-csv-column">${miHTML}</td>
-                    <td class="${sourceGene}-loc lg-csv-column">Fetching Data</td>
-                    <td class="${targetGene}-pdi-loc lg-csv-column">Nucleus (assumed)</td>
-                </tr>`;
-            }
-        }
 
         $('#csvTable').find("tbody").append(htmlString);
     };
@@ -2042,7 +2000,6 @@
                 // AIV.addNumberOfPDIsToNodeLabel();
                 AIV.addProteinNodeQtips();
                 AIV.addPPIEdgeQtips();
-                AIV.addEffectorNodeQtips();
                 AIV.cy.style(AIV.getCyStyle()).update();
                 // AIV.setDNANodesPosition();
                 // AIV.resizeEListener();
@@ -2085,7 +2042,6 @@
                 AIV.cy.startBatch();
                 AIV.parseProteinNodes(AIV.createSVGPieDonutCartStr.bind(AIV), true);
                 AIV.cy.endBatch();
-                AIV.effectorsLocHouseCleaning();
                 if (!AIV.SUBA4LoadState){
                     AIV.returnBGImageSVGasCSS().update();
                 }

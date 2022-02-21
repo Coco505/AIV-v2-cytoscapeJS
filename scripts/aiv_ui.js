@@ -32,7 +32,6 @@
      */
     function runUIFunctions(AIVref) {
         validateGeneForm();
-        effectorDropdownSelect2();
         enableInteractionsCheckbox();
         addExampleEListener();
         showFormOnLoad();
@@ -141,7 +140,6 @@
                                     }
                                 });
                                 AIVObj.cy.json(jsonObj);
-                                AIVObj.effectorsLocHouseCleaning();
                                 buildRefsFromCyData(AIVObj);
                                 if (typeof jsonObj.AIV2JSON === 'undefined'){ //test if user inputed their own interaction data or it was an AIV2 JSON
                                     AIVObj.cy.layout(AIVObj.getCySpreadLayout()).run();
@@ -152,11 +150,9 @@
                                     AIVObj.fetchGeneAnnoForTable(userNodeAgiNames);
                                 }
                                 else { // only need these things for an AIV2 JSON upload
-                                    AIVObj.addChrNodeQtips();
                                     AIVObj.addPPIEdgeQtips();
                                 }
                                 AIVObj.addProteinNodeQtips();
-                                AIVObj.addEffectorNodeQtips();
                             }
                             catch (err){
                                 alertify.logPosition("top right");
@@ -313,7 +309,7 @@
      */
     function getXMLSourcesModifyDropdown(){
         $.ajax({
-            url: "//bar.utoronto.ca/interactions2/cgi-bin/getXML.php?species=arabidopsis",
+            url: "https://bar.utoronto.ca/interactions2/cgi-bin/getXML.php?species=rice",
             type: "GET"
         })
             .then((res)=>{
@@ -338,7 +334,7 @@
                 return;
             }
             $.ajax({
-               url: "//bar.utoronto.ca/interactions2/cgi-bin/getTissues.php?species=arabidopsis&dataSource=" + event.target.value,
+               url: "https://bar.utoronto.ca/interactions2/cgi-bin/getTissues.php?species=rice&dataSource=" + event.target.value,
                type: "GET",
             })
                 .then((res) =>{
@@ -453,27 +449,28 @@
         let inputMode = document.querySelector('input[name=expression_mode]:checked').value;
         let exprLdStateAbsOrRel = AIVObj.exprLoadState[inputMode];
         // console.log("load state", AIVObj.exprLoadState);
-        if (!exprLdStateAbsOrRel){ // i.e. initial load of the expression data of either absolute or relative
+        if (!exprLdStateAbsOrRel) { // i.e. initial load of the expression data of either absolute or relative
             // console.log('initial load');
             let geneList = [];
-            AIVObj.cy.filter("node[name ^= 'At']").forEach(function(node){
+            AIVObj.cy.filter("node[name ^= 'LOC']").forEach(function (node) {
                 let nodeID = node.data('name');
-                if (nodeID.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)){ //only get ABI IDs, i.e. exclude effectors
+                if (nodeID.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i)) { //only get ABI IDs, i.e. exclude effectors
                     geneList.push(nodeID);
                 }
             });
             let firstDropdown = document.getElementById('dropdownSource');
             let secondDropdown = document.getElementById('dropdownTissues');
+
             let postObject = {
                 geneIDs: geneList,
-                species: "arabidopsis",
-                inputMode:  inputMode,
-                dataSource: firstDropdown.options[ firstDropdown.selectedIndex ].text,
-                tissue: secondDropdown.options[ secondDropdown.selectedIndex ].text,
+                species: "rice",
+                inputMode: inputMode,
+                dataSource: firstDropdown.options[firstDropdown.selectedIndex].text,
+                tissue: secondDropdown.options[secondDropdown.selectedIndex].text,
                 tissuesCompare: "",
             };
-            // console.log(postObject);
             createExpressionAJAX(postObject, inputMode, AIVObj);
+
         }
         else if (exprLdStateAbsOrRel) { // if data alread loaded for that datamode, i.e. relative or absolute
             if (resetSoftBounds){
@@ -490,7 +487,7 @@
 
     function createExpressionAJAX(listOfAGIsAndExprsnModes, mode, AIVObj) {
         return $.ajax({
-            url: "//bar.utoronto.ca/interactions2/cgi-bin/getSample.php",
+            url: "https://bar.utoronto.ca/~vlau/cgi-bin-RIV2-relative/getSample.php",
             type: "POST",
             data: JSON.stringify( listOfAGIsAndExprsnModes ),
             contentType : 'application/json',
@@ -500,8 +497,8 @@
                 parseExprData(res, AIVObj, mode);
             })
             .catch((err)=>{
-
             });
+
 
         function parseExprData(resData, AIVRef, absOrRel){
             let absMode = absOrRel === "absolute";
@@ -515,7 +512,7 @@
                         .data({
                             absExpMn : expressionVal,
                             absExpSd : geneExp.sd
-                        });
+                        })
                 }
                 else {
                     AIVRef.cy.$id(`Protein_${geneExpKey}`)
@@ -543,7 +540,7 @@
         let userThreshold = Number(document.getElementById('exprThreshold').value) || 0;
         // having the below 2 base CSS selectors is especially helpful in case we don't get an expr value for an AGI such that the previous colour won't still be there
         let baseCSSObj = AIVObj.cy.style()
-            .selector('node[id ^= "Protein_At"]')
+            .selector('node[id ^= "Protein_"]')
                 .css({
                     'background-color': AIVObj.nodeDefaultColor,
                 })
@@ -686,51 +683,6 @@
             .catch(()=>{
                 document.getElementById("spinnerIntAct").style.display = 'none';
                 $("<img src='images/inactiveServer.png'/>").insertAfter("#IntActSpan");
-            });
-    }
-
-    /**
-     * @function effectorDropdownSelect2 - UI functionality for adding the dropdown list of effectors in our database
-     */
-    function effectorDropdownSelect2() {
-        $.ajax({
-            url: "//bar.utoronto.ca/interactions2/cgi-bin/get_effectors.php",
-            type: "GET"
-        })
-            .then((res)=>{
-                if (res.status === "success"){
-                    let effectorSelect$ = $('#effectorSelect');
-                    effectorSelect$.empty();
-                    for (let i = 0; i < res.data.length; i++){
-                        let option = res.data[i];
-                        let element = document.createElement('option');
-                        element.textContent = option;
-                        element.value = option;
-                        document.getElementById('effectorSelect').appendChild(element);
-                    }
-                    effectorSelect$.select2({
-                        dropdownParent: $('#formModal')
-                    });
-                    document.getElementById('addEffectorButton').addEventListener('click', function(e){
-                        let latestFormEntry = document.getElementById('genes').value.split('\n').pop();
-                        console.log(latestFormEntry);
-                        if (latestFormEntry.match(/^LOC_OS(0[1-9]|1[0-2])G\d{5}$/i) || res.data.indexOf(latestFormEntry) >= 0){
-                            document.getElementById('genes').value += "\n" + effectorSelect$.val();
-                        }
-                        else if (latestFormEntry === "\n" || latestFormEntry === ""){
-                            document.getElementById('genes').value += effectorSelect$.val();
-                        }
-                        else{
-                            $('#formErrorModal').modal('show');
-                        }
-                    });
-                }
-                else {
-                    throw new Error('loading effectors failed');
-                }
-            })
-            .catch((err)=>{
-                document.getElementById('loadingEffectors').innerText = "Error loading effectors";
             });
     }
 
