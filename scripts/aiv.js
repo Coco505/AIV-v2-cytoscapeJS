@@ -697,34 +697,6 @@
         oldEdges.restore();
     };
 
-    // /**
-    //  * @namespace {object} AIV
-    //  * @function addDNANodesToAIVObj - Take in an object (interaction) data and add it to the 'global' state
-    //  * @param {object} DNAObjectData - as the interaction data as it comes in the GET request i.e.
-    //  *                                 {source: .., target:.., index: 2, ..}
-    //  */
-    // AIV.addDNANodesToAIVObj = function(DNAObjectData) {
-    //     var chrNum = DNAObjectData.target.charAt(2).toUpperCase(); //if it was At2g04880 then it'd '2'
-    //     var name = chrNum; // Just for 'm' and 'c'
-    //
-    //     if (chrNum === "M") {
-    //         name = "Mitochondria";
-    //     }
-    //     else if (chrNum === "C"){
-    //         name = "Chloroplast";
-    //     }
-    //
-    //     // console.log("addDNANodes", DNAObjectData, "chrNum");
-    //     if (AIV.chromosomesAdded.hasOwnProperty(chrNum)){
-    //         AIV.chromosomesAdded[chrNum].push(DNAObjectData);
-    //     }
-    //     else { // Adding chromosome to DOM as it does not exist on app yet
-    //         AIV.addChromosomeToCytoscape(DNAObjectData, chrNum, name);
-    //         AIV.chromosomesAdded[chrNum] = [];
-    //         AIV.chromosomesAdded[chrNum].push(DNAObjectData); /*NB: The DNA data edge is stored here in the AIV object property (for each chr) instead of storing it in the edges themselves*/
-    //     }
-    // };
-
     /**
      * This will add the chromosome nodes (that represent 1+ gene in them) to the cy core
      *
@@ -782,34 +754,6 @@
         ]);
     };
 
-    // /**
-    //  * @namespace {object} AIV
-    //  * @function addNumberOfPDIsToNodeLabel - This function will take the name property of a DNA Chr node and parse it nicely for display on the cy core
-    //  */
-    // AIV.addNumberOfPDIsToNodeLabel = function () {
-    //     for (let chr of Object.keys(this.chromosomesAdded)) {
-    //         let prevName = this.cy.getElementById(`DNA_Chr${chr}`).data('name');
-    //         this.cy.getElementById(`DNA_Chr${chr}`)
-    //             .data('name', `${prevName + "\n" + this.chromosomesAdded[chr].length + "\n"} PDIs`);
-    //     }
-    // };
-    //
-    // /**
-    //  * @namespace {object} AIV
-    //  * @function setDNANodesPosition - Lock the position of the DNA nodes at the bottom of the cy app
-    //  */
-    // AIV.setDNANodesPosition = function () {
-    //     let xCoord = 50;
-    //     let viewportWidth = this.cy.width();
-    //     this.cy.$("node[id ^='DNA_Chr']:locked").unlock(); //if locked (for example during hide settings, unlock)
-    //     let numOfChromosomes = Object.keys(this.chromosomesAdded).length; //for A. th. the max would be 7
-    //     for (let chr of Object.keys(this.chromosomesAdded)) {
-    //         let chrNode = this.cy.getElementById(`DNA_Chr${chr}`);
-    //         chrNode.position({x: xCoord, y: this.cy.height() - (this.DNANodeSize/2 + 5) });
-    //         chrNode.lock(); //hardset the position of chr nodes to bottom
-    //         xCoord += viewportWidth/numOfChromosomes;
-    //     }
-    // };
 
     /**
      * @namespace {object} AIV
@@ -819,107 +763,6 @@
         this.cy.on('resize', this.setDNANodesPosition.bind(AIV));
     };
 
-    // /**
-    //  * @namespace {object} AIV
-    //  * @function createPDITable - We need to return a nicely formatted HTML table to be shown in the DNA tooltip. Take in an array of DNA interactions to be parsed and put appropriately in table tags
-    //  * @param {Array.<Object>} arrayPDIdata - array of interaction data i.e. [ {source: .., target:.., index: 2, ..}, {}, {}]
-    //  * @returns {string} - a nicely parsed HTML table
-    //  */
-    // AIV.createPDItable = function (arrayPDIdata) {
-    //     console.log(arrayPDIdata);
-    //     let queryPDIsInChr = {};
-    //     let targets = [];
-    //     let pubmedRefHashTable = {};
-    //     let pValueHashTable = {};
-    //     let htmlTABLE = "<div class='pdi-table-scroll-pane'><table><tbody><tr><th></th>";
-    //     arrayPDIdata.forEach(function(PDI){ //populate local data to be used in another loop
-    //         // console.log("looping through each element of PDI array", PDI);
-    //         if (!queryPDIsInChr.hasOwnProperty(PDI.source)) {
-    //             queryPDIsInChr[PDI.source] = []; //create property with name of query/source gene
-    //         }
-    //         queryPDIsInChr[PDI.source].push(PDI.target);
-    //         if (targets.indexOf(PDI.target) === -1) {//To not repeat PDI for two queries with same PDI
-    //             targets.push(PDI.target);
-    //         }
-    //         pubmedRefHashTable[`${PDI.source}_${PDI.target}`] = PDI.reference;
-    //         pValueHashTable[`${PDI.source}_${PDI.target}`] = PDI.interolog_confidence;
-    //     });
-    //     for (let protein of Object.keys(queryPDIsInChr)) { //add query proteins to the header of table
-    //         htmlTABLE += `<th>${protein}<br>(${queryPDIsInChr[protein].length} PDIs)</th>`;
-    //     }
-    //     htmlTABLE += "</tr>";
-    //     targets.forEach(function(targetDNAGene){ //process remaining rows for each target DNA gene
-    //         htmlTABLE += `<tr><td>${targetDNAGene}</td>`;
-    //         for (let queryGene of Object.keys(queryPDIsInChr)) { //recall the keys are the source (i.e. query genes)
-    //             if (queryPDIsInChr[queryGene].indexOf(targetDNAGene) !== -1) { //indexOf returns -1 if not found
-    //                 let cellContent = "<td>";
-    //                 let fontawesome = '';
-    //                 if (pValueHashTable[queryGene + '_' + targetDNAGene] === 0){ //i.e. experimental PDI
-    //                    cellContent = "<td class='experimental-pdi-cell'>";
-    //                    fontawesome = 'flask';
-    //                    if (pubmedRefHashTable[queryGene + '_' + targetDNAGene] === "doi:10.1016/j.cell.2016.04.038"){ // TODO: change this to  DAP-Seq PMID once db is updated
-    //                        fontawesome = 'dna';
-    //                    }
-    //                 }
-    //                 else if (pValueHashTable[queryGene + '_' + targetDNAGene] > 0){ // i.e. predicted PDI
-    //                     cellContent = "<td class='predicted-pdi-cell'>";
-    //                     fontawesome = 'terminal';
-    //                 }
-    //                 AIV.memoizedSanRefIDs(pubmedRefHashTable[queryGene + '_' + targetDNAGene]).forEach(function(ref){
-    //                     cellContent += AIV.memoizedRetRefLink(ref, targetDNAGene, queryGene).replace(/("_blank">).*/, "$1") + /* replace innerHTML text returned */
-    //                         `<i class="fas fa-${fontawesome}"></i>` +
-    //                         '</a>';
-    //                 });
-    //                 htmlTABLE += cellContent + '</td>';
-    //             }
-    //             else {
-    //                 htmlTABLE += '<td></td>';
-    //             }
-    //         }
-    //         htmlTABLE += "</tr>";
-    //     });
-    //     htmlTABLE += "</tbody></table></div>";
-    //     // console.log("finished createPDITable function execution", queryPDIsInChr);
-    //     return htmlTABLE;
-    // };
-
-    // /**
-    //  * @namespace {object} AIV
-    //  * @function addChrNodeQTips -  Add qTips (tooltips) to 'Chromosome' Nodes
-    //  * Note we have to run a for loop on this to check where to add the qTips.
-    //  * Moreover the text is created from another function which will nicely return a HTML table
-    //  */
-    // AIV.addChrNodeQtips = function () {
-    //     let that = this;
-    //     AIV.memoizedPDITable = _.memoize(this.createPDItable);
-    //     for (let chr of Object.keys(this.chromosomesAdded)){
-    //         // console.log(this.chromosomesAdded[chr], `chr${chr}`);
-    //         this.cy.on('mouseover', `node[id^='DNA_Chr${chr}']`, function(event){
-    //             var chrNode = event.target;
-    //             chrNode.qtip(
-    //                 {
-    //                     content:
-    //                         {
-    //                             title :
-    //                                 {
-    //                                     text :`Chromosome ${chr}`,
-    //                                     button: 'Close' //close button
-    //                                 },
-    //                             text: AIV.memoizedPDITable(that.chromosomesAdded[chr])
-    //                         },
-    //                     style    : { classes : 'qtip-light qtip-dna'},
-    //                     show:
-    //                         {
-    //                             solo : true, //only one qTip at a time
-    //                             event: `${event.type}`, // Same show event as triggered event handler
-    //                             ready: true, // Show the tooltip immediately upon creation
-    //                         },
-    //                     hide : false // Don't hide on any event except close button
-    //                 }
-    //             );
-    //         });
-    //     }
-    // };
 
     /**
      * @namespace {object} AIV
@@ -947,9 +790,7 @@
                                     text :
                                         function(event, api) {
                                             let HTML = "";
-                                            // HTML += AIV.showDesc(protein);
-                                            // HTML += AIV.showSynonyms(protein);
-                                            // HTML += `<p>${AIV.showMapMan(protein)}</p>`;
+                                            HTML += AIV.showDesc(protein);
                                             HTML += `<p>${AIV.displaySUBA4qTipData(protein)}</p>`;
                                             if (AIV.exprLoadState.absolute && exprOverlayChkbox.checked){;
                                                 HTML += `<p>Mean Expr: ${protein.data('absExpMn')}</p>
@@ -1041,9 +882,6 @@
      */
     AIV.displaySUBA4qTipData = function(protein) {
         let locData = protein.data('localizationData');
-
-
-
         if (!locData) {return "Localization data unavailable";} //exit if undefined
         let baseString = "";
         for (let i = 0; i < locData.length ;i++){
@@ -1052,7 +890,6 @@
                 baseString += `<p>${Object.keys(locData[i])[0]}: ${(locPercent*100).toFixed(1)}%</p>`;
             }
         }
-
         return baseString;
     };
 
@@ -1608,6 +1445,8 @@
 
                 AIV.cy.$('node[name = "' + nodeID + '"]')
                     .data({
+                        predictedSUBA : true,
+                        experimentalSUBA : false,
                         localizationData: calcLocPcts(localization),
                         localization : majorityLoc, //assign localization to highest loc score
                     });
@@ -1618,8 +1457,8 @@
             else { //For nodes without any localization data
                 AIV.cy.$('node[name = "' + nodeID + '"]')
                     .data({
-                        // predictedSUBA : false,
-                        // experimentalSUBA : false,
+                        predictedSUBA : false,
+                        experimentalSUBA : false,
                         localizationData: [],
                         localization: "unknown"
                     });
@@ -1783,143 +1622,6 @@
         this.cy.endBatch();
     };
 
-    // /**
-    //  * @namespace {object} AIV
-    //  * @function createGETMapManURL -
-    //  * Create URL for get request for mapman information, namely for the codes (MapMan IDs).
-    //  * Example: http://www.gabipd.org/services/rest/mapman/bin?request=[{"agi":"At4g36250"},{"agi":"At4g02070"}]
-    //  * Data returned is an array of objects, MapMan code is nested inside "result[0].parent.code" for each AGI
-    //  * @returns {string} - url for the HTTP request
-    //  */
-    // AIV.createGETMapManURL = function () {
-    //     let mapmanURL = "//bar.utoronto.ca/interactions2/cgi-bin/bar_mapman.php?request=[";
-    //     this.parseProteinNodes((nodeID) => mapmanURL +=`"${nodeID}",`);
-    //     mapmanURL = mapmanURL.slice(0,-1); //remove last ','
-    //     mapmanURL += "]";
-    //     return mapmanURL;
-    // };
-    //
-    // /**
-    //  * @namespace {object} AIV
-    //  * @function processMapMan -
-    //  * Take in the MapMan data from response JSON to be processed:
-    //  * 1) Add MapMan code(s) and name(s) to node data to be displayed via qTip and on their donut centre
-    //  *
-    //  * @param {object} MapManJSON - the JSON response we receive from the MapMan API
-    //  */
-    // AIV.processMapMan = function (MapManJSON) {
-    //     if (!this.mapManLoadState) { //if MapMan data not yet fully parsed after API call, i.e. initial load
-    //         MapManJSON.forEach(function(geneMapMan) { // Iterate through each result item and inside however many annotations it has
-    //             var particularGene = AIV.cy.$('node[id = "Protein_' + geneMapMan.request.agi + '"]');
-    //             particularGene.data("numOfMapMans", geneMapMan.result.length); //for use in the qTip
-    //             geneMapMan.result.forEach(function (resultItem, index) {
-    //                 var MapManCodeN = 'MapManCode' +  (index + 1); //i.e. MapManCode1
-    //                 var MapManNameN = 'MapManName' +  (index + 1); //i.e. MapManName1
-    //                 particularGene.data({ //Add this data to object to be called via the qTip
-    //                     [MapManCodeN] : chopMapMan(resultItem.code),
-    //                     [MapManNameN] : chopMapMan(resultItem.name)
-    //                 });
-    //
-    //                 //Now call SVG modifying function for the first iteration, Nick agreed to only show the first MapMan on the Donut, also add this MapMan to our checklist/legend
-    //                 if (index === 0) {
-    //                     let mapManBIN = resultItem.code.split(".")[0]; // get MapMan BIN (leftmost number, i.e. get 29 from 29.12.3)
-    //                     particularGene.data('mapManOverlay', mapManBIN);
-    //                     modifySVGString(particularGene, mapManBIN);
-    //                     if (!AIV.mapManOnDom.hasOwnProperty(mapManBIN)){
-    //                         AIV.mapManOnDom[mapManBIN] = 1;
-    //                     }
-    //                     else {
-    //                         AIV.mapManOnDom[mapManBIN] = AIV.mapManOnDom[mapManBIN] + 1;
-    //                     }
-    //                 }
-    //             });
-    //         });
-    //         // Last, use the mapManOnDom state variable to add the list of checkboxes to our #bootstrapDropDownMM
-    //         // example li item <li><a href="#" class="small" data-value="27" tabIndex="-1"><input type="checkbox"/ checked="true"> MapMan 27 - RNA</a></li>
-    //         // credits: https://codepen.io/bseth99/pen/fboKH
-    //         let df = document.createDocumentFragment();
-    //         for (let mapManNumKey of Object.keys(AIV.mapManOnDom)){
-    //             let li = document.createElement('li');
-    //             let a = document.createElement('a');
-    //             AIV.helperSetAttributes(a, {
-    //                 "data-value" : mapManNumKey,
-    //                 "tabIndex"   : "-1",
-    //                 "href"       : "#"
-    //             });
-    //             a.className = "small";
-    //             let input = document.createElement('input');
-    //             AIV.helperSetAttributes(input, {
-    //                 'type' : 'checkbox',
-    //                 'checked' : 'true'
-    //             });
-    //             a.append(input);
-    //             a.insertAdjacentHTML("beforeend", ` ${mapManNumKey}-${AIV.mapManDefinitions[mapManNumKey]} (${AIV.mapManOnDom[mapManNumKey]})`);
-    //             li.append(a);
-    //             df.append(li);
-    //         }
-    //         document.getElementById('bootstrapDropDownMM').appendChild(df);
-    //         AIV.mapManDropDown(AIV);
-    //     }
-    //     else {
-    //        this.parseProteinNodes(function(proteinNode){
-    //            modifySVGString(proteinNode, proteinNode.data('mapManOverlay'));
-    //        }, true);
-    //     }
-    //
-    //     /**
-    //      * @function chopMapman - decides whether or not to chop off MapMan Code/Name based on its detail/length (decided with discussion with Nick)
-    //      * @param {string} nameOrCode - "27.2.1 or RNA.regulation.transcription" as an example
-    //      */
-    //     function chopMapMan(nameOrCode) {
-    //         if ( (nameOrCode.match(/\./g)||[]).length > 3 ){ //If the MapMan is too detailed, remove the last occurence
-    //             return nameOrCode.substr(0, nameOrCode.lastIndexOf("."));
-    //         }
-    //         return nameOrCode; //By default return unmodified string if it is not too detailed
-    //     }
-    //
-    //     /**
-    //      * @namespace {object} AIV
-    //      * @function modifySVGString - Expect a node as an object reference and modify its svgDonut string by adding a text tag
-    //      * @param {object} geneNode - as a node object reference
-    //      * @param {string} mapManNum - the first MapMan number (leftmost)
-    //      */
-    //     function modifySVGString(geneNode, mapManNum) {
-    //         if (typeof mapManNum === "undefined") {return;}
-    //         let newSVGString = decodeURIComponent(geneNode.data('svgDonut')).replace("</svg>", ""); //strip </svg> closing tag
-    //         newSVGString = newSVGString.replace('data:image/svg+xml;utf8,', "");
-    //         // console.log(newSVGString);
-    //         let xPosition = mapManNum.length > 1 ? '32%' : '41%'; //i.e. check if single or double digit
-    //         let fontSize = geneNode.data('queryGene') ? 22 : 13; //Determine whether gene is bigger or not (i.e. search gene or not)
-    //
-    //         newSVGString += `<text x='${xPosition}' y='59%' font-size='${fontSize}' font-family="Verdana" visibility="visible">${mapManNum}</text></svg>`;
-    //         newSVGString = 'data:image/svg+xml;utf8,' + encodeURIComponent(newSVGString);
-    //
-    //         geneNode.data('svgDonut', newSVGString);
-    //     }
-    //
-    // };
-    //
-    // /**
-    //  * @namespace {object} AIV
-    //  * @function hideMapMan - un/hides MapMan centre by un/enabling visibility attribute inside the svg
-    //  * @param {boolean} hide - boolean to determine if we are hiding or not
-    //  */
-    // AIV.hideMapMan = function(hide){
-    //     this.cy.startBatch();
-    //     this.cy.$('node[?MapManCode1]').forEach(function(node){ //check for nodes with a MapMan
-    //         let newSVGString = decodeURIComponent(node.data('svgDonut'));
-    //         newSVGString = newSVGString.replace('data:image/svg+xml;utf8,', "");
-    //         if (hide){
-    //             newSVGString = newSVGString.replace('"visible"', '"hidden"'); //change visbility attribute
-    //         }
-    //         else {
-    //             newSVGString = newSVGString.replace('"hidden"', '"visible"');
-    //         }
-    //         newSVGString = 'data:image/svg+xml;utf8,' + encodeURIComponent(newSVGString);
-    //         node.data('svgDonut', newSVGString);
-    //     });
-    //     this.cy.endBatch();
-    // };
 
     /**
      * @namespace {object} AIV
@@ -1991,17 +1693,11 @@
                 //Below lines are to push to a temp array to make a POST for gene summaries
                 let nodeAgiNames = [];
                 AIV.parseProteinNodes((nodeID) => nodeAgiNames.push(nodeID));
-                // for (let chr of Object.keys(AIV.chromosomesAdded)) {
-                //     nodeAgiNames = nodeAgiNames.concat(AIV.chromosomesAdded[chr].map( prop => prop.target));
-                // }
                 let uniqueNodeAgiNames = Array.from(new Set(nodeAgiNames)); // remove duplicates to make quicker requests
-                // AIV.fetchGeneAnnoForTable(uniqueNodeAgiNames);
-                // AIV.addChrNodeQtips();
-                // AIV.addNumberOfPDIsToNodeLabel();
+                AIV.fetchGeneAnnoForTable(uniqueNodeAgiNames);
                 AIV.addProteinNodeQtips();
                 AIV.addPPIEdgeQtips();
                 AIV.cy.style(AIV.getCyStyle()).update();
-                // AIV.setDNANodesPosition();
                 // AIV.resizeEListener();
                 AIV.addContextMenus();
                 AIV.cy.layout(AIV.getCySpreadLayout()).run();
@@ -2078,14 +1774,10 @@
 
         // // Published
         // postObj.published = $('#published').is(':checked');
-        //
-        // // DNA
-        // postObj.querydna = $('#queryDna').is(':checked');
 
         // let serviceURL = '//bar.utoronto.ca/interactions2/cgi-bin/get_interactions_dapseq.php';////
         let serviceURL = 'https://bar.utoronto.ca/api_dev/interactions/';
 
-        console.log(JSON.stringify(postObj))
 
         return $.ajax({
             url: serviceURL,
@@ -2143,33 +1835,15 @@
         // console.log(ABIsArr);
         this.createGeneSummariesAjaxPromise(ABIsArr)
             .then(res => {
-                for(let gene of Object.keys(res)){
-                    let desc = res[gene].brief_description || "";
-                    let synonyms = res[gene].synonyms;
-                    let firstSyn = synonyms[0];
-                    let selector = this.cy.$(`#Protein_${gene}`);
-                    if (firstSyn !== null){
-                        $(`.${gene}-annotate`).text(firstSyn + " " + `${res[gene].brief_description}`);
-                        if (selector.length > 0) { // only get proteins
-                            selector.data({
-                                'annotatedName': firstSyn + " "+ selector.data('name'),
-                                'desc': desc,
-                                'synonyms': synonyms,
-                            });
-                        }
-                    }
-                    else {
-                        $(`.${gene}-annotate`).text(`${res[gene].brief_description}`);
-                        if (selector.length > 0) { // only get proteins
-                            selector.data({
-                                'annotatedName': selector.data('name'),
-                                'desc': desc,
-                            });
-                        }
-                    }
-                }
-                this.cy.filter("node[id ^= 'Effector']").forEach(function(effector){
-                    $(`.${effector.data('name')}-annotate`).text("null");
+                res["data"].forEach(function(geneAnno){
+                    let gene = geneAnno["gene"]
+                    let desc = geneAnno["annotation"].slice(8)
+                    let selector = AIV.cy.$(`#Protein_${gene}`);
+                    $(`.${gene}-annotate`).text(`${desc}`);
+                    selector.data({
+                        'annotatedName': selector.data('name'),
+                        'desc': desc,
+                    });
                 });
                 this.returnGeneNameCSS().update();
             })
@@ -2198,10 +1872,15 @@
      * @returns {Object} - jQuery AJAX promise object
      */
     AIV.createGeneSummariesAjaxPromise = function(ABIs) {
+        var postObj =
+            {
+                species: 'rice',
+                genes : ABIs,
+            };
         return $.ajax({
-            url: "//bar.utoronto.ca/interactions2/cgi-bin/gene_summaries_POST.php",
+            url: "https://bar.utoronto.ca/api_dev/gene_annotation/",
             type: "POST",
-            data: JSON.stringify(ABIs),
+            data: JSON.stringify(postObj),
             contentType: "application/json",
             dataType: "json"
         });

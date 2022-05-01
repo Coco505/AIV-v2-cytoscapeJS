@@ -309,7 +309,7 @@
      */
     function getXMLSourcesModifyDropdown(){
         $.ajax({
-            url: "https://bar.utoronto.ca/interactions2/cgi-bin/getXML.php?species=rice",
+            url: "http://bar.utoronto.ca/~vlau/cgi-bin-RIV2-relative/getXML.php?species=rice",
             type: "GET"
         })
             .then((res)=>{
@@ -462,7 +462,7 @@
             let secondDropdown = document.getElementById('dropdownTissues');
 
             let postObject = {
-                geneIDs: geneList,
+                gene_IDs: geneList,
                 species: "rice",
                 inputMode: inputMode,
                 dataSource: firstDropdown.options[firstDropdown.selectedIndex].text,
